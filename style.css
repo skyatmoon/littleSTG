@@ -1,0 +1,34 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #333; /* Darker background to contrast the canvas */
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    align-items: flex-start; /* Align items at the top */
+}
+
+canvas {
+    border: 10px solid #ff0; /* Bright yellow border to make the canvas stand out */
+    background-color: #000; /* Black background for the canvas */
+}
+
+.hud {
+    margin-left: 20px;
+    max-width: 200px;
+}
+
+.hud h2 {
+    margin-top: 0;
+}
+
+.hud p {
+    font-size: 18px;
+    margin: 10px 0;
+}
