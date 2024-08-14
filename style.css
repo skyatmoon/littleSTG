@@ -4,19 +4,25 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #333; /* Darker background to contrast the canvas */
+    background-color: #333;
     color: #fff;
     font-family: Arial, sans-serif;
 }
 
 .container {
     display: flex;
-    align-items: flex-start; /* Align items at the top */
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.instructions, .hud {
+    max-width: 200px;
+    margin: 0 20px;
 }
 
 canvas {
-    border: 10px solid #ff0; /* Bright yellow border to make the canvas stand out */
-    background-color: #000; /* Black background for the canvas */
+    border: 10px solid #ff0;
+    background-color: #000;
 }
 
 .hud {
