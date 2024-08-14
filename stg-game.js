@@ -5,8 +5,8 @@ const ctx = canvas.getContext('2d');
 const player = {
     x: canvas.width / 2 - 25,
     y: canvas.height - 60,
-    width: 50,
-    height: 50,
+    width: 10,
+    height: 10,
     speed: 5,
     slowSpeed: 2, // Slower speed when shift is held
     bullets: [],
@@ -72,7 +72,7 @@ function drawEnemyBullets() {
 
 // Function to spawn enemies
 function spawnEnemy() {
-    const enemySize = 50;
+    const enemySize = 20;
     const enemyX = Math.random() * (canvas.width - enemySize);
     enemies.push({ x: enemyX, y: 0, width: enemySize, height: enemySize, angle: 0 });
 }
@@ -216,8 +216,9 @@ function checkCollisions() {
                 player.points += 100; // Add points for defeating an enemy
 
                 // Spawn boss if enough enemies are defeated
-                if (enemiesDefeated >= 50 && !bossActive) {
+                if (enemiesDefeated >= 10 && !bossActive) {
                     spawnBoss();
+                    enemiesDefeated = 0; // Reset enemy count for next boss
                 }
             }
         });
@@ -240,8 +241,7 @@ function checkCollisions() {
                     boss = null;
                     bossActive = false;
                     console.log("Boss defeated!");
-                    player.points += 1000;
-	    player.points += 1000; // Add bonus points for defeating the boss
+                    player.points += 1000;// Add bonus points for defeating the boss
                 }
             }
         }
@@ -342,7 +342,6 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'ArrowRight') player.moveRight = true;
     if (event.key === 'ArrowUp') player.moveUp = true;
     if (event.key === 'ArrowDown') player.moveDown = true;
-    if (event.key === ' ') player.shoot(); // Initial shoot
     if (event.key === 'Shift') player.isSlow = true; // Enable slow mode
 });
 
@@ -351,7 +350,6 @@ document.addEventListener('keyup', function(event) {
     if (event.key === 'ArrowRight') player.moveRight = false;
     if (event.key === 'ArrowUp') player.moveUp = false;
     if (event.key === 'ArrowDown') player.moveDown = false;
-    if (event.key === ' ') player.canShoot = true; // Allow shooting again
     if (event.key === 'Shift') player.isSlow = false; // Disable slow mode
 });
 
