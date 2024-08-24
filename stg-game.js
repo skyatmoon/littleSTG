@@ -1,6 +1,92 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Define game states
+let gameState = 'start'; // start, playing, paused, gameOver
+
+// Add event listeners for starting, pausing, and leaving the game
+document.addEventListener('keydown', function(event) {
+    if (gameState === 'start' && event.key === 'Enter') {
+        gameState = 'playing'; // Start the game
+    } else if (gameState === 'playing' && event.key === 'Escape') {
+        gameState = 'paused'; // Pause the game
+    } else if (gameState === 'paused' && event.key === ' ') {
+        gameState = 'playing'; // Resume the game
+    } else if (gameState === 'paused' && event.key === 'Escape') {
+        gameState = 'gameOver'; // Leave the game
+    } else if (gameState === 'gameOver' && event.key === 'Escape') {
+        gameState = 'start'; // reset the game
+    }
+});
+
+//background music
+document.getElementById('play-melody').addEventListener('click', async function() {
+    await Tone.start(); // Ensure Tone.js is started (required for some browsers)
+
+    const synth = new Tone.Synth().toDestination();
+
+    const melody = [
+        { note: 'E4', duration: '4n' }, // Jingle
+        { note: 'E4', duration: '4n' }, // Bells
+        { note: 'E4', duration: '2n' }, // Jingle all
+        { note: 'E4', duration: '4n' }, // The way
+        { note: 'E4', duration: '4n' }, // Oh what
+        { note: 'E4', duration: '4n' }, // Fun it
+        { note: 'G4', duration: '4n' }, // Is to ride
+        { note: 'C4', duration: '4n' }, // In a one
+        { note: 'D4', duration: '4n' }, // Horse open
+        { note: 'E4', duration: '4n' }, // Sleigh
+        { note: 'F4', duration: '4n' }, // Hey
+        { note: 'F4', duration: '4n' }, // Jingle
+        { note: 'F4', duration: '4n' }, // Bells
+        { note: 'F4', duration: '4n' }, // Jingle
+        { note: 'F4', duration: '4n' }, // All
+        { note: 'E4', duration: '4n' }, // The
+        { note: 'E4', duration: '4n' }, // Way
+        { note: 'D4', duration: '4n' }, // Oh what
+        { note: 'D4', duration: '4n' }, // Fun it
+        { note: 'E4', duration: '2n' }  // Is to ride
+    ];
+
+    let time = Tone.now();
+    melody.forEach((note) => {
+        synth.triggerAttackRelease(note.note, note.duration, time);
+        time += Tone.Time(note.duration).toSeconds();
+    });
+});
+
+function drawStartScreen() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press Enter to Start', canvas.width / 2, canvas.height / 2);
+}
+
+function drawPauseScreen() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Paused', canvas.width / 2, canvas.height / 2);
+    ctx.font = '20px Arial';
+    ctx.fillText('Press Space to Resume', canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText('Press Escape to Leave', canvas.width / 2, canvas.height / 2 + 80);
+}
+
+function drawGameOverScreen() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'red';
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Thanks for Playing!', canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText('Press Escape to Leave', canvas.width / 2, canvas.height / 2 + 80);
+}
+
 // Player object
 const player = {
     x: canvas.width / 2 - 25,
@@ -290,14 +376,6 @@ player.shoot = function() {
     this.bullets.push({ x: this.x + this.width / 2 - 2.5, y: this.y, width: 5, height: 10 });
 };
 
-// Function to draw the score and lives
-function drawHUD() {
-    ctx.fillStyle = 'gray';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Lives: ${player.lives}`, 20, 30);
-    ctx.fillText(`Points: ${player.points}`, 20, 60);
-}
-
 // Function to update the HUD display
 function updateHUD() {
     document.getElementById('lives').textContent = `Lives: ${player.lives}`;
@@ -316,24 +394,34 @@ function resetGame() {
     updateHUD();
 }
 
-// Game loop
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    updatePlayer();
-    drawPlayer();
-    drawPlayerBullets();
-    drawEnemyBullets();
-    drawEnemies();
-    checkCollisions();
+    
+    if (gameState === 'start') {
+        drawStartScreen();
+    } else if (gameState === 'playing') {
+        updatePlayer();
+        drawPlayer();
+        drawPlayerBullets();
+        drawEnemyBullets();
+        drawEnemies();
+        checkCollisions();
 
-    if (bossActive) {
-        drawBoss();
+        if (bossActive) {
+            drawBoss();
+        }
+
+        // drawHUD();
+        updateHUD();
+    } else if (gameState === 'paused') {
+        drawPauseScreen();
+    } else if (gameState === 'gameOver') {
+        drawGameOverScreen();
     }
 
-    drawHUD(); // Draw the score and lives
-    updateHUD();
-
-    requestAnimationFrame(gameLoop);
+    if (gameState !== 'gameOver') {
+        requestAnimationFrame(gameLoop);
+    }
 }
 
 // Handle player input
