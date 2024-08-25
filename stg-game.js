@@ -5,9 +5,13 @@ const ctx = canvas.getContext('2d');
 let gameState = 'start'; // start, playing, paused, gameOver
 
 // Add event listeners for starting, pausing, and leaving the game
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', async  function(event) {
     if (gameState === 'start' && event.key === 'Enter') {
         gameState = 'playing'; // Start the game
+        await Tone.start();
+
+        // Start the background music
+        startBackgroundMusic();
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused'; // Pause the game
     } else if (gameState === 'paused' && event.key === ' ') {
@@ -19,41 +23,42 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-//background music
-document.getElementById('play-melody').addEventListener('click', async function() {
-    await Tone.start(); // Ensure Tone.js is started (required for some browsers)
+// // Initialize Tone.js sounds
+// const backgroundMusic = new Tone.Loop((time) => {
+//     const synth = new Tone.Synth().toDestination();
+//     synth.triggerAttackRelease('C2', '8n', time);
+//     synth.triggerAttackRelease('E5', '8n', time + 0.5);
+//     synth.triggerAttackRelease('G3', '8n', time + 1);
+//     synth.triggerAttackRelease('C4', '8n', time + 1.5);
+// }, '2n').start(0);
 
-    const synth = new Tone.Synth().toDestination();
+const synth = new Tone.Synth().toDestination();
+const melody = new Tone.Sequence(
+  (time, note) => {
+    synth.triggerAttackRelease(note, '8n', time);
+  },
+  ['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4', 'E4', 'G4', 'E4', 'C4', 'G3'], // Example sequence
+  '4n'
+);
 
-    const melody = [
-        { note: 'E4', duration: '4n' }, // Jingle
-        { note: 'E4', duration: '4n' }, // Bells
-        { note: 'E4', duration: '2n' }, // Jingle all
-        { note: 'E4', duration: '4n' }, // The way
-        { note: 'E4', duration: '4n' }, // Oh what
-        { note: 'E4', duration: '4n' }, // Fun it
-        { note: 'G4', duration: '4n' }, // Is to ride
-        { note: 'C4', duration: '4n' }, // In a one
-        { note: 'D4', duration: '4n' }, // Horse open
-        { note: 'E4', duration: '4n' }, // Sleigh
-        { note: 'F4', duration: '4n' }, // Hey
-        { note: 'F4', duration: '4n' }, // Jingle
-        { note: 'F4', duration: '4n' }, // Bells
-        { note: 'F4', duration: '4n' }, // Jingle
-        { note: 'F4', duration: '4n' }, // All
-        { note: 'E4', duration: '4n' }, // The
-        { note: 'E4', duration: '4n' }, // Way
-        { note: 'D4', duration: '4n' }, // Oh what
-        { note: 'D4', duration: '4n' }, // Fun it
-        { note: 'E4', duration: '2n' }  // Is to ride
-    ];
+const shootSound = new Tone.Synth().toDestination();
+const enemyHitSound = new Tone.MembraneSynth().toDestination();
+const playerHitSound = new Tone.NoiseSynth({ volume: -10 }).toDestination();
+const gameOverSound = new Tone.AMSynth().toDestination();
 
-    let time = Tone.now();
-    melody.forEach((note) => {
-        synth.triggerAttackRelease(note.note, note.duration, time);
-        time += Tone.Time(note.duration).toSeconds();
-    });
-});
+// Function to start background music
+function startBackgroundMusic() {
+    if (Tone.Transport.state !== 'started') {
+        Tone.Transport.start();
+    }
+    melody.start(0); // Start the melody when the game starts
+}
+
+// Function to stop background music
+function stopBackgroundMusic() {
+    melody.stop();
+}
+
 
 function drawStartScreen() {
     ctx.fillStyle = 'black';
@@ -105,6 +110,25 @@ const player = {
     lives: 3, // Player starts with 3 lives
     points: 0 // Player's points start at 0
 };
+
+const enemyPatterns = [
+    {
+        type: 'straight', // 直线运动
+        speed: 1, // 速度
+        direction: 90 // 方向（以角度表示，90度表示向下）
+    },
+    {
+        type: 'wave', // 波浪形运动
+        speed: 1,
+        amplitude: 20, // 振幅
+        frequency: 0.05 // 频率
+    },
+    {
+        type: 'curve', // 曲线运动
+        speed: 1,
+        controlPoints: [{ x: 100, y: 200 }, { x: 200, y: 300 }] // 曲线控制点
+    }
+];
 
 // Enemy and boss variables
 let enemiesDefeated = 0;
@@ -158,9 +182,14 @@ function drawEnemyBullets() {
 
 // Function to spawn enemies
 function spawnEnemy() {
-    const enemySize = 20;
-    const enemyX = Math.random() * (canvas.width - enemySize);
-    enemies.push({ x: enemyX, y: 0, width: enemySize, height: enemySize, angle: 0 });
+    const enemy = {
+        x: Math.random() * (canvas.width - 20),
+        y: 0,
+        width: 20,
+        height: 20,
+        patternIndex: Math.floor(Math.random() * enemyPatterns.length) // 随机选择一个模式
+    };
+    enemies.push(enemy);
 }
 
 // Function to draw enemies
@@ -178,6 +207,32 @@ function drawEnemies() {
         // Make enemies shoot bullets
         if (Math.random() < 0.03) {
             shootEnemyBullets(enemy);
+        }
+    });
+}
+
+function updateEnemies() {
+    enemies.forEach(enemy => {
+        const pattern = enemyPatterns[enemy.patternIndex];
+
+        switch (pattern.type) {
+            case 'straight':
+                enemy.y += pattern.speed; // 直线下移
+                break;
+            case 'wave':
+                enemy.y += pattern.speed; // 下移
+                enemy.x += Math.sin(enemy.y * pattern.frequency) * pattern.amplitude; // 波浪形移动
+                break;
+            case 'curve':
+                // 在这里实现曲线运动的逻辑
+                break;
+            default:
+                break;
+        }
+
+        // 移除超出画布的敌人
+        if (enemy.y > canvas.height) {
+            enemies.splice(enemies.indexOf(enemy), 1);
         }
     });
 }
@@ -374,7 +429,9 @@ function updatePlayer() {
 // Shooting method added to player object
 player.shoot = function() {
     this.bullets.push({ x: this.x + this.width / 2 - 2.5, y: this.y, width: 5, height: 10 });
+    // shootSound.triggerAttackRelease('E5', '8n');
 };
+
 
 // Function to update the HUD display
 function updateHUD() {
@@ -399,8 +456,10 @@ function gameLoop() {
     
     if (gameState === 'start') {
         drawStartScreen();
+        startBackgroundMusic();  // Start music when the game is started
     } else if (gameState === 'playing') {
         updatePlayer();
+        updateEnemies();
         drawPlayer();
         drawPlayerBullets();
         drawEnemyBullets();
@@ -411,12 +470,14 @@ function gameLoop() {
             drawBoss();
         }
 
-        // drawHUD();
         updateHUD();
     } else if (gameState === 'paused') {
         drawPauseScreen();
+        stopBackgroundMusic();  // Pause music when the game is paused
     } else if (gameState === 'gameOver') {
         drawGameOverScreen();
+        stopBackgroundMusic();  // Stop music when the game is over
+        gameOverSound.triggerAttackRelease('C3', '1n');
     }
 
     if (gameState !== 'gameOver') {
