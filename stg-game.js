@@ -51,7 +51,6 @@ function startBackgroundMusic() {
 
 function stopBackgroundMusic() {
     melody.stop();
-    Tone.Transport.stop(); // Also stop the transport to ensure it resets correctly
 }
 
 // Function to draw the player
@@ -221,12 +220,29 @@ function updateHUD() {
 
 // Function to reset the game
 function resetGame() {
+    initializeGame();
+}
+
+// Function to initialize the game
+function initializeGame() {
+    player.x = canvas.width / 2 - 25;
+    player.y = canvas.height - 60;
     player.lives = 3;
     player.points = 0;
+    player.bullets = [];
+    player.moveLeft = false;
+    player.moveRight = false;
+    player.moveUp = false;
+    player.moveDown = false;
+    player.isSlow = false;
+    player.canShoot = true;
+    
     bossActive = false;
-    enemyBullets.length = 0;
     boss = null;
-    gameState = 'gameOver';
+    enemyBullets.length = 0;
+
+    gameState = 'start';
+    stopBackgroundMusic();
 }
 
 // Game loop
@@ -235,8 +251,8 @@ function gameLoop() {
 
     if (gameState === 'start') {
         drawScreen([{text: 'Press Enter to Start'}]);
-        stopBackgroundMusic();
     } else if (gameState === 'playing') {
+        startBackgroundMusic();
         updatePlayer();
         drawPlayer();
         drawPlayerBullets();
@@ -251,15 +267,15 @@ function gameLoop() {
     } else if (gameState === 'paused') {
         drawScreen([
             {text: 'Paused'},
-            {text: 'Press Space to Resume', index: 1},
-            {text: 'Press Escape to Leave', index: 2}
+            {text: 'Press Space to Resume'},
+            {text: 'Press Escape to Leave'}
         ], 'rgba(0, 0, 0, 0.7)');
         stopBackgroundMusic();
     } else if (gameState === 'gameOver') {
         drawScreen([
             {text: 'Game Over'},
-            {text: 'Thanks for Playing!', index: 1},
-            {text: 'Press Escape to Leave', index: 2}
+            {text: 'Thanks for Playing!'},
+            {text: 'Press Escape to Leave'}
         ]);
         stopBackgroundMusic();
     }
@@ -270,22 +286,21 @@ function gameLoop() {
 }
 
 // Initialize game
+initializeGame();
+
+// Event listeners for starting, pausing, and restarting the game
 document.addEventListener('keydown', function(event) {
     if (gameState === 'start' && event.key === 'Enter') {
-        await Tone.start();  // Ensure Tone.js starts from a user action
         gameState = 'playing';
-        startBackgroundMusic();
         spawnBoss(); // Start with a boss for testing
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused';
-        stopBackgroundMusic(); // Ensure music stops when pausing
     } else if (gameState === 'paused' && event.key === ' ') {
         gameState = 'playing';
-        startBackgroundMusic(); // Restart music when resuming
     } else if (gameState === 'paused' && event.key === 'Escape') {
         gameState = 'gameOver';
     } else if (gameState === 'gameOver' && event.key === 'Escape') {
-        gameState = 'start';
+        initializeGame(); // Reset everything for a new game
     }
 });
 
