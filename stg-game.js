@@ -211,7 +211,11 @@ function checkCollisions() {
         }
     });
 }
-
+// Function to update the HUD display
+function updateHUD() {
+    document.getElementById('lives').textContent = `Lives: ${player.lives}`;
+    document.getElementById('points').textContent = `Points: ${player.points}`;
+}
 // Function to reset the game
 function resetGame() {
     player.lives = 3;
@@ -278,6 +282,23 @@ document.addEventListener('keydown', function(event) {
     } else if (gameState === 'gameOver' && event.key === 'Escape') {
         gameState = 'start';
     }
+});
+
+// Event listeners for player movement and shooting
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowLeft') player.moveLeft = true;
+    if (event.key === 'ArrowRight') player.moveRight = true;
+    if (event.key === 'ArrowUp') player.moveUp = true;
+    if (event.key === 'ArrowDown') player.moveDown = true;
+    if (event.key === 'Shift') player.isSlow = true;
+});
+
+document.addEventListener('keyup', function(event) {
+    if (event.key === 'ArrowLeft') player.moveLeft = false;
+    if (event.key === 'ArrowRight') player.moveRight = false;
+    if (event.key === 'ArrowUp') player.moveUp = false;
+    if (event.key === 'ArrowDown') player.moveDown = false;
+    if (event.key === 'Shift') player.isSlow = false;
 });
 
 gameLoop();
