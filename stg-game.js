@@ -51,6 +51,7 @@ function startBackgroundMusic() {
 
 function stopBackgroundMusic() {
     melody.stop();
+    Tone.Transport.stop(); // Also stop the transport to ensure it resets correctly
 }
 
 // Function to draw the player
@@ -211,11 +212,13 @@ function checkCollisions() {
         }
     });
 }
+
 // Function to update the HUD display
 function updateHUD() {
     document.getElementById('lives').textContent = `Lives: ${player.lives}`;
     document.getElementById('points').textContent = `Points: ${player.points}`;
 }
+
 // Function to reset the game
 function resetGame() {
     player.lives = 3;
@@ -269,14 +272,16 @@ function gameLoop() {
 // Initialize game
 document.addEventListener('keydown', function(event) {
     if (gameState === 'start' && event.key === 'Enter') {
+        await Tone.start();  // Ensure Tone.js starts from a user action
         gameState = 'playing';
         startBackgroundMusic();
         spawnBoss(); // Start with a boss for testing
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused';
+        stopBackgroundMusic(); // Ensure music stops when pausing
     } else if (gameState === 'paused' && event.key === ' ') {
         gameState = 'playing';
-        startBackgroundMusic();
+        startBackgroundMusic(); // Restart music when resuming
     } else if (gameState === 'paused' && event.key === 'Escape') {
         gameState = 'gameOver';
     } else if (gameState === 'gameOver' && event.key === 'Escape') {
