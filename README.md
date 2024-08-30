@@ -1,2 +1,0 @@
-# littleSTG
-js stg
