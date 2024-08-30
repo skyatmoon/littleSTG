@@ -39,6 +39,7 @@ const player = {
 // Boss variables
 let bossActive = false;
 let boss = null;
+const enemyBullets = [];
 
 // Functions to handle game states and music
 function startBackgroundMusic() {
@@ -65,6 +66,35 @@ function drawPlayer() {
     }
 }
 
+// Function to draw player bullets
+function drawPlayerBullets() {
+    ctx.fillStyle = 'red';
+    player.bullets.forEach((bullet, index) => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        bullet.y -= 7; // Move bullet up
+
+        // Remove bullets that go off screen
+        if (bullet.y < 0) {
+            player.bullets.splice(index, 1);
+        }
+    });
+}
+
+// Function to draw enemy bullets
+function drawEnemyBullets() {
+    ctx.fillStyle = 'yellow';
+    enemyBullets.forEach((bullet, index) => {
+        bullet.x += bullet.dx; // Move bullet along x-axis
+        bullet.y += bullet.dy; // Move bullet along y-axis
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+        // Remove bullets that go off screen
+        if (bullet.y > canvas.height || bullet.x < 0 || bullet.x > canvas.width) {
+            enemyBullets.splice(index, 1);
+        }
+    });
+}
+
 // Player movement and shooting
 function updatePlayer() {
     const speed = player.isSlow ? player.slowSpeed : player.speed;
@@ -79,6 +109,19 @@ function updatePlayer() {
         player.canShoot = false;
         setTimeout(() => player.canShoot = true, 300);
     }
+}
+
+// Consolidated function to draw different game screens
+function drawScreen(textLines, bgColor = 'black', textColor = 'white') {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = textColor;
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    
+    textLines.forEach((line, index) => {
+        ctx.fillText(line.text, canvas.width / 2, canvas.height / 2 + index * 40);
+    });
 }
 
 // Function to draw boss
@@ -169,13 +212,23 @@ function checkCollisions() {
     });
 }
 
+// Function to reset the game
+function resetGame() {
+    player.lives = 3;
+    player.points = 0;
+    bossActive = false;
+    enemyBullets.length = 0;
+    boss = null;
+    gameState = 'gameOver';
+}
+
 // Game loop
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameState === 'start') {
-        drawStartScreen();
-        startBackgroundMusic();
+        drawScreen([{text: 'Press Enter to Start'}]);
+        stopBackgroundMusic();
     } else if (gameState === 'playing') {
         updatePlayer();
         drawPlayer();
@@ -189,10 +242,18 @@ function gameLoop() {
 
         updateHUD();
     } else if (gameState === 'paused') {
-        drawPauseScreen();
+        drawScreen([
+            {text: 'Paused'},
+            {text: 'Press Space to Resume', index: 1},
+            {text: 'Press Escape to Leave', index: 2}
+        ], 'rgba(0, 0, 0, 0.7)');
         stopBackgroundMusic();
     } else if (gameState === 'gameOver') {
-        drawGameOverScreen();
+        drawScreen([
+            {text: 'Game Over'},
+            {text: 'Thanks for Playing!', index: 1},
+            {text: 'Press Escape to Leave', index: 2}
+        ]);
         stopBackgroundMusic();
     }
 
@@ -202,4 +263,21 @@ function gameLoop() {
 }
 
 // Initialize game
+document.addEventListener('keydown', function(event) {
+    if (gameState === 'start' && event.key === 'Enter') {
+        gameState = 'playing';
+        startBackgroundMusic();
+        spawnBoss(); // Start with a boss for testing
+    } else if (gameState === 'playing' && event.key === 'Escape') {
+        gameState = 'paused';
+    } else if (gameState === 'paused' && event.key === ' ') {
+        gameState = 'playing';
+        startBackgroundMusic();
+    } else if (gameState === 'paused' && event.key === 'Escape') {
+        gameState = 'gameOver';
+    } else if (gameState === 'gameOver' && event.key === 'Escape') {
+        gameState = 'start';
+    }
+});
+
 gameLoop();
