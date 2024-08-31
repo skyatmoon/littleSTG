@@ -213,9 +213,22 @@ function advanceLevel() {
 
 // Function to reset the game
 function resetGame() {
-    initializeGame();
-    requestAnimationFrame(gameLoop);
-    gameState = 'gameOver';
+    gameState = 'gameOver';  // Set game state to 'gameOver'
+    initializeGame();  // Reset game elements
+    drawScreen([
+        {text: 'Game Over'},
+        {text: 'Thanks for Playing!'},
+        {text: 'Press Enter to Restart'}
+    ]);  // Display game over screen
+
+    // Stop further animation frames until restart
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && gameState === 'gameOver') {
+            gameState = 'playing';
+            initializeGame();
+            requestAnimationFrame(gameLoop);
+        }
+    }, { once: true });  // Ensures the listener is called only once
 }
 
 // Function to initialize the game
