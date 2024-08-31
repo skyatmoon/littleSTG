@@ -4,16 +4,6 @@ const ctx = canvas.getContext('2d');
 // Define game states
 let gameState = 'start';
 
-// Initialize Tone.js sounds
-const synth = new Tone.Synth().toDestination();
-const melody = new Tone.Sequence(
-  (time, note) => {
-    synth.triggerAttackRelease(note, '8n', time);
-  },
-  ['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4', 'E4', 'G4', 'E4', 'C4', 'G3'],
-  '4n'
-);
-
 // Player object
 const player = {
     x: canvas.width / 2 - 25,
@@ -40,18 +30,6 @@ const player = {
 let bossActive = false;
 let boss = null;
 const enemyBullets = [];
-
-// Functions to handle game states and music
-function startBackgroundMusic() {
-    if (Tone.Transport.state !== 'started') {
-        Tone.Transport.start();
-    }
-    melody.start(0);
-}
-
-function stopBackgroundMusic() {
-    melody.stop();
-}
 
 // Function to draw the player
 function drawPlayer() {
@@ -225,6 +203,7 @@ function resetGame() {
 
 // Function to initialize the game
 function initializeGame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     player.x = canvas.width / 2 - 25;
     player.y = canvas.height - 60;
     player.lives = 3;
@@ -242,7 +221,6 @@ function initializeGame() {
     enemyBullets.length = 0;
 
     gameState = 'start';
-    stopBackgroundMusic();
 }
 
 // Game loop
@@ -252,7 +230,6 @@ function gameLoop() {
     if (gameState === 'start') {
         drawScreen([{text: 'Press Enter to Start'}]);
     } else if (gameState === 'playing') {
-        startBackgroundMusic();
         updatePlayer();
         drawPlayer();
         drawPlayerBullets();
@@ -270,14 +247,12 @@ function gameLoop() {
             {text: 'Press Space to Resume'},
             {text: 'Press Escape to Leave'}
         ], 'rgba(0, 0, 0, 0.7)');
-        stopBackgroundMusic();
     } else if (gameState === 'gameOver') {
         drawScreen([
             {text: 'Game Over'},
             {text: 'Thanks for Playing!'},
-            {text: 'Press Escape to Leave'}
+            {text: 'Press Enter to Restart'}
         ]);
-        stopBackgroundMusic();
     }
 
     if (gameState !== 'gameOver') {
@@ -299,8 +274,9 @@ document.addEventListener('keydown', function(event) {
         gameState = 'playing';
     } else if (gameState === 'paused' && event.key === 'Escape') {
         gameState = 'gameOver';
-    } else if (gameState === 'gameOver' && event.key === 'Escape') {
-        initializeGame(); // Reset everything for a new game
+    } else if (gameState === 'gameOver' && event.key === 'Enter') {
+        initializeGame();
+        requestAnimationFrame(gameLoop);
     }
 });
 
