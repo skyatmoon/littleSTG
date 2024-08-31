@@ -129,7 +129,7 @@ function spawnBoss(level) {
         y: 50,
         width: 150,
         height: 150,
-        health: 1,//50 + (level - 1) * 10,  // Increase health by 10 for each level
+        health: 10,//50 + (level - 1) * 10,  // Increase health by 10 for each level
         speed: 2 + (level - 1) * 0.5   // Increase speed slightly each level
     };
     bossActive = true;
@@ -194,20 +194,20 @@ function checkCollisions() {
     });
 }
 
-// Function to update the HUD display
 function updateHUD() {
     document.getElementById('lives').textContent = `Lives: ${player.lives}`;
     document.getElementById('points').textContent = `Points: ${player.points}`;
+    document.getElementById('level').textContent = `Level: ${currentLevel}`; // Update level display
 }
 
 // Function to advance to the next level
 function advanceLevel() {
     if (currentLevel < totalLevels) {
         currentLevel++;
-        spawnBoss(currentLevel);
+        gameState = 'levelComplete'; // Set game state to 'levelComplete'
     } else {
         gameState = 'gameOver';
-        drawScreen([{ text: 'You Win!' }, { text: 'Thanks for Playing!' }]);
+        drawScreen([{ text: 'You Win!' }, { text: 'Thanks for Playing!' }, { text: 'Press Enter to Restart' }]);
     }
 }
 
@@ -220,15 +220,6 @@ function resetGame() {
         {text: 'Thanks for Playing!'},
         {text: 'Press Enter to Restart'}
     ]);  // Display game over screen
-
-    // Stop further animation frames until restart
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' && gameState === 'gameOver') {
-            gameState = 'playing';
-            initializeGame();
-            requestAnimationFrame(gameLoop);
-        }
-    }, { once: true });  // Ensures the listener is called only once
 }
 
 // Function to initialize the game
@@ -254,12 +245,11 @@ function initializeGame() {
     gameState = 'start';
 }
 
-// Game loop
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameState === 'start') {
-        drawScreen([{text: 'Press Enter to Start'}]);
+        drawScreen([{ text: 'Press Enter to Start' }]);
     } else if (gameState === 'playing') {
         updatePlayer();
         drawPlayer();
@@ -274,16 +264,18 @@ function gameLoop() {
         updateHUD();
     } else if (gameState === 'paused') {
         drawScreen([
-            {text: 'Paused'},
-            {text: 'Press Space to Resume'},
-            {text: 'Press Escape to Leave'}
+            { text: 'Paused' },
+            { text: 'Press Space to Resume' },
+            { text: 'Press Escape to Leave' }
         ], 'rgba(0, 0, 0, 0.7)');
     } else if (gameState === 'gameOver') {
         drawScreen([
-            {text: 'Game Over'},
-            {text: 'Thanks for Playing!'},
-            {text: 'Press Enter to Restart'}
+            { text: 'Game Over' },
+            { text: 'Thanks for Playing!' },
+            { text: 'Press Enter to Restart' }
         ]);
+    } else if (gameState === 'levelComplete') { // New state for level complete
+        drawScreen([{ text: `Level ${currentLevel - 1} Complete!` }, { text: 'Press Enter to Continue' }]);
     }
 
     if (gameState !== 'gameOver') {
@@ -307,6 +299,10 @@ document.addEventListener('keydown', function(event) {
         gameState = 'gameOver';
     } else if (gameState === 'gameOver' && event.key === 'Enter') {
         initializeGame();
+        requestAnimationFrame(gameLoop);
+    } else if (gameState === 'levelComplete' && event.key === 'Enter') { // New condition for 'levelComplete'
+        gameState = 'playing';
+        spawnBoss(currentLevel);
         requestAnimationFrame(gameLoop);
     }
 });
