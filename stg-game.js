@@ -3,6 +3,8 @@ const ctx = canvas.getContext('2d');
 
 // Define game states
 let gameState = 'start';
+let currentLevel = 1;
+const totalLevels = 13;
 
 // Player object
 const player = {
@@ -120,14 +122,15 @@ function drawBoss() {
 }
 
 // Function to handle boss behavior
-function spawnBoss() {
+function spawnBoss(level) {
+    // Bosses get progressively harder with each level
     boss = {
         x: canvas.width / 2 - 75,
         y: 50,
         width: 150,
         height: 150,
-        health: 50,
-        speed: 2
+        health: 1,//50 + (level - 1) * 10,  // Increase health by 10 for each level
+        speed: 2 + (level - 1) * 0.5   // Increase speed slightly each level
     };
     bossActive = true;
 }
@@ -168,6 +171,7 @@ function checkCollisions() {
                     boss = null;
                     bossActive = false;
                     player.points += 1000;
+                    advanceLevel();
                 }
             }
         }
@@ -184,7 +188,7 @@ function checkCollisions() {
             enemyBullets.splice(bulletIndex, 1);
 
             if (player.lives <= 0) {
-                resetGame();
+                resetGame()
             }
         }
     });
@@ -196,9 +200,22 @@ function updateHUD() {
     document.getElementById('points').textContent = `Points: ${player.points}`;
 }
 
+// Function to advance to the next level
+function advanceLevel() {
+    if (currentLevel < totalLevels) {
+        currentLevel++;
+        spawnBoss(currentLevel);
+    } else {
+        gameState = 'gameOver';
+        drawScreen([{ text: 'You Win!' }, { text: 'Thanks for Playing!' }]);
+    }
+}
+
 // Function to reset the game
 function resetGame() {
     initializeGame();
+    requestAnimationFrame(gameLoop);
+    gameState = 'gameOver';
 }
 
 // Function to initialize the game
@@ -219,6 +236,7 @@ function initializeGame() {
     bossActive = false;
     boss = null;
     enemyBullets.length = 0;
+    currentLevel = 1;
 
     gameState = 'start';
 }
@@ -267,7 +285,7 @@ initializeGame();
 document.addEventListener('keydown', function(event) {
     if (gameState === 'start' && event.key === 'Enter') {
         gameState = 'playing';
-        spawnBoss(); // Start with a boss for testing
+        spawnBoss(currentLevel); // Start with the first boss
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused';
     } else if (gameState === 'paused' && event.key === ' ') {
