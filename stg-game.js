@@ -245,6 +245,13 @@ function initializeGame() {
     gameState = 'start';
 }
 
+function startGameLoop() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId); // Cancel the previous animation frame
+    }
+    animationFrameId = requestAnimationFrame(gameLoop); // Start a new game loop
+}
+
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -299,11 +306,11 @@ document.addEventListener('keydown', function(event) {
         gameState = 'gameOver';
     } else if (gameState === 'gameOver' && event.key === 'Enter') {
         initializeGame();
-        requestAnimationFrame(gameLoop);
+        startGameLoop();
     } else if (gameState === 'levelComplete' && event.key === 'Enter') { // New condition for 'levelComplete'
         gameState = 'playing';
         spawnBoss(currentLevel);
-        requestAnimationFrame(gameLoop);
+        startGameLoop();
     }
 });
 
