@@ -5,6 +5,7 @@ const ctx = canvas.getContext('2d');
 let gameState = 'start';
 let currentLevel = 1;
 const totalLevels = 13;
+let animationFrameId;
 
 // Player object
 const player = {
@@ -204,7 +205,8 @@ function updateHUD() {
 function advanceLevel() {
     if (currentLevel < totalLevels) {
         currentLevel++;
-        gameState = 'levelComplete'; // Set game state to 'levelComplete'
+        initializeGame(true); // Reset level with player and boss position reset
+        spawnBoss(currentLevel); // Spawn a new boss for the next level
     } else {
         gameState = 'gameOver';
         drawScreen([{ text: 'You Win!' }, { text: 'Thanks for Playing!' }, { text: 'Press Enter to Restart' }]);
@@ -223,12 +225,14 @@ function resetGame() {
 }
 
 // Function to initialize the game
-function initializeGame() {
+function initializeGame(resetLevel = false) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    player.x = canvas.width / 2 - 25;
+
+    // Reset player position and stats
+    player.x = canvas.width / 2 - player.width / 2;
     player.y = canvas.height - 60;
-    player.lives = 3;
-    player.points = 0;
+    player.lives = resetLevel ? player.lives : 3; // Reset lives only if not advancing a level
+    player.points = resetLevel ? player.points : 0; // Retain points if advancing a level
     player.bullets = [];
     player.moveLeft = false;
     player.moveRight = false;
@@ -237,12 +241,18 @@ function initializeGame() {
     player.isSlow = false;
     player.canShoot = true;
     
+    // Reset boss and enemy bullets
     bossActive = false;
     boss = null;
     enemyBullets.length = 0;
-    currentLevel = 1;
 
-    gameState = 'start';
+    // Reset or advance level
+    if (!resetLevel) {
+        currentLevel = 1;
+        gameState = 'start';
+    } else {
+        gameState = 'levelComplete';
+    }
 }
 
 function startGameLoop() {
