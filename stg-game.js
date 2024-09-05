@@ -131,19 +131,19 @@ function spawnBoss(level) {
         width: 150,
         height: 150,
         health: 10,//50 + (level - 1) * 10,  // Increase health by 10 for each level
-        speed: 2,// Increase speed slightly each level
-        bulletSpeed: 3,
-        bulletCount: 24
+        speed: 1,// Increase speed slightly each level
     };
     bossActive = true;
 }
 
 // Function to shoot boss bullets
 function shootBossBullets(boss) {
+    const bulletSpeed = 3;
+    const bulletCount = 24;
     for (let i = 0; i < bulletCount; i++) {
-        const angle = (Math.PI * 2 / boss.bulletCount) * i;
-        const dx = Math.cos(angle) * boss.bulletSpeed;
-        const dy = Math.sin(angle) * boss.bulletSpeed;
+        const angle = (Math.PI * 2 / bulletCount) * i;
+        const dx = Math.cos(angle) * bulletSpeed;
+        const dy = Math.sin(angle) * bulletSpeed;
         enemyBullets.push({ x: boss.x + boss.width / 2, y: boss.y + boss.height / 2, width: 5, height: 5, dx, dy });
     }
 }
@@ -295,7 +295,7 @@ function gameLoop() {
     }
 
     if (gameState !== 'gameOver') {
-        requestAnimationFrame(gameLoop);
+        animationFrameId = requestAnimationFrame(gameLoop);
     }
 }
 
