@@ -135,10 +135,22 @@ function drawScreen(textLines, bgColor = 'black', textColor = 'white') {
     });
 }
 
-// Function to draw boss
+let bossHitFlash = false;
+let bossHitTimer = 0;
+
 function drawBoss() {
     if (boss) {
-        ctx.fillStyle = 'purple';
+        // Flashing logic
+        if (bossHitFlash) {
+            ctx.fillStyle = 'lightgray'; // Flash white when hit
+            bossHitTimer--;
+            if (bossHitTimer <= 0) {
+                bossHitFlash = false; // Stop flashing after some time
+            }
+        } else {
+            ctx.fillStyle = 'purple'; // Default boss color
+        }
+
         ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
         boss.x += boss.speed;
 
@@ -196,6 +208,9 @@ function checkCollisions() {
                 boss.health--;
                 player.bullets.splice(bulletIndex, 1);
                 player.points += 500;
+
+                bossHitFlash = true;
+                bossHitTimer = 5; // Duration of the flash
 
                 if (boss.health <= 0) {
                     boss = null;
