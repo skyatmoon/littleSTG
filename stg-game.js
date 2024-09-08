@@ -159,9 +159,13 @@ function drawBoss() {
             boss.speed = -boss.speed;
         }
 
-        if (Math.random() < 0.1) {
+        if (Math.random() < 0.01){
             shootBossBullets(boss);
         }
+
+        
+        
+        
     }
 }
 
@@ -173,7 +177,7 @@ function spawnBoss(level) {
         y: 50,
         width: 150,
         height: 150,
-        health: 10,//50 + (level - 1) * 10,  // Increase health by 10 for each level
+        health: 20,//50 + (level - 1) * 10,  // Increase health by 10 for each level
         speed: 1,// Increase speed slightly each level
     };
     bossActive = true;
@@ -181,15 +185,89 @@ function spawnBoss(level) {
 
 // Function to shoot boss bullets
 function shootBossBullets(boss) {
-    const bulletSpeed = 3;
-    const bulletCount = 24;
-    for (let i = 0; i < bulletCount; i++) {
-        const angle = (Math.PI * 2 / bulletCount) * i;
-        const dx = Math.cos(angle) * bulletSpeed;
-        const dy = Math.sin(angle) * bulletSpeed;
-        enemyBullets.push({ x: boss.x + boss.width / 2, y: boss.y + boss.height / 2, width: 5, height: 5, dx, dy });
+    if (boss.health > 10) {
+        generateBulletsPattern(boss, 3, 24, linePattern);
+    } else if (boss.health > 5) {
+        generateBulletsPattern(boss, 3, 24, fanPattern);
+    }
+    else {
+        generateBulletsPattern(boss, 3, 12, circlePattern);
     }
 }
+
+function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction) {
+    for (let i = 0; i < bulletCount; i++) {
+        const { dx, dy } = patternFunction(i, bulletCount, boss, player); // Include player position
+        enemyBullets.push({
+            x: boss.x + boss.width / 2,
+            y: boss.y + boss.height / 2,
+            width: 5,
+            height: 5,
+            dx: dx * bulletSpeed,
+            dy: dy * bulletSpeed
+        });
+    }
+}
+
+function circularPattern(i, bulletCount) {
+    const angle = (Math.PI * 2 / bulletCount) * i;
+    return {
+        dx: Math.cos(angle),
+        dy: Math.sin(angle)
+    };
+}
+
+function spiralPattern(i, bulletCount) {
+    const angle = (Math.PI * 2 / bulletCount) * i + (Date.now() % 1000) / 1000; // slowly rotate over time
+    return {
+        dx: Math.cos(angle),
+        dy: Math.sin(angle)
+    };
+}
+
+function wavePattern(i, bulletCount) {
+    return {
+        dx: Math.sin(i / bulletCount * Math.PI * 2), // Creates a wave along the x-axis
+        dy: 1
+    };
+}
+
+function linePattern(i, bulletCount, boss, player) {
+    const angleToPlayer = Math.atan2(player.y - boss.y, player.x - boss.x); // Angle toward player
+    return {
+        dx: Math.cos(angleToPlayer),
+        dy: Math.sin(angleToPlayer)
+    };
+}
+
+function circlePattern(i, bulletCount, boss, player) {
+    const angle = (Math.PI * 2 / bulletCount) * i;
+    return {
+        dx: Math.cos(angle),
+        dy: Math.sin(angle)
+    };
+}
+
+function fanPattern(i, bulletCount, boss, player) {
+    const fanAngle = Math.PI / 4; // The total angle of the fan (45 degrees)
+    const baseAngle = Math.atan2(player.y - boss.y, player.x - boss.x); // Base angle toward player
+    const angle = baseAngle - fanAngle / 2 + (fanAngle / (bulletCount - 1)) * i; // Spread bullets
+    return {
+        dx: Math.cos(angle),
+        dy: Math.sin(angle)
+    };
+}
+
+function trianglePattern(i, bulletCount, boss, player) {
+    const baseAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+    const offset = 0.3; // Spread out the bullets to form a triangle
+    return {
+        dx: Math.cos(baseAngle + (i % 2 === 0 ? offset : -offset)), // Alternate sides
+        dy: Math.sin(baseAngle + (i % 2 === 0 ? offset : -offset))
+    };
+}
+
+let pauseFrames = 0;
 
 // Collision detection and game over logic
 function checkCollisions() {
@@ -229,15 +307,28 @@ function checkCollisions() {
         const distY = bullet.y + bullet.height / 2 - playerCenterY;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
-        if (distance < hitboxRadius) {
+        if (distance < hitboxRadius && !godtime) {
             player.lives -= 1;
             enemyBullets.splice(bulletIndex, 1);
+            console.log('Player hit! Lives remaining:', player.lives);
 
             if (player.lives < 0) {
                 resetGame();
             }
+
+            if (player.lives >= 0) {
+                resetPlayerPosition();
+                pauseFrames = 5;
+            }
+
+            godtime = true;
         }
     });
+}
+
+function resetPlayerPosition() {
+    player.x = canvas.width / 2 - player.width / 2;
+    player.y = canvas.height - 60;
 }
 
 function updateHUD() {
@@ -312,6 +403,12 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!playing) {
         startMusic(currentLevel);
+    }
+
+    if (pauseFrames > 0) {
+        // Pause the game loop, decrement the pauseFrames counter
+        pauseFrames--;
+        return; // Do not continue the game loop until pause is over
     }
 
 

@@ -13,12 +13,32 @@
   <div id="stg"><!-- 弹幕效果将出现在这里 --></div>
   <script type="text/javascript" src="shigma.github.io/STG/stg.runtime.js"></script>
   <script>
-    (async () => {
-      const field = new stg.Field(document.querySelector('#stg'))
-      await field.setPlayer({ /* 玩家配置 */ })
-      await field.setBarrage({ /* 弹幕配置 */ })
-      field.toggle() // 开始游戏!
-    })
+    const { math } = require('@stg/utils')
+
+    module.exports = {
+      title: '波与粒',
+      mounted() {
+        this.setInterval(3, (tick) => {
+          this.emitBullets(9, (index) => ({
+            display: 'rice',
+            origin: {
+              x: 240,
+              y: 280,
+              face: math.sin(tick / 30),
+            },
+            state: {
+              rho: 16,
+              color: 'purple',
+              face: index / 4.5,
+            },
+            mutate(tick) {
+              this.rho += 2 + tick / 40
+              this.polarLocate(this.rho, this.face)
+            },
+          }))
+        })
+      }
+    }
   </script>
 
 </body>
