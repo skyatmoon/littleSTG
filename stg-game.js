@@ -34,6 +34,7 @@ let bossActive = false;
 let boss = null;
 const enemyBullets = [];
 
+
 //music
 JZZ.synth.Tiny.register('Web Audio');
 var out = JZZ().openMidiOut();
