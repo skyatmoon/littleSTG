@@ -4,21 +4,59 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #333;
+    background-color: #061928;
     color: #fff;
     font-family: Arial, sans-serif;
     box-sizing: border-box;
+    overflow: hidden; /* Prevent scrollbars */
+    position: relative; /* Relative positioning to contain absolute elements */
 }
 
+/* Ensure the container and game elements are centered and above the rain */
 .container {
     display: flex;
-    flex-direction: column; /* Stack elements vertically on small screens */
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 1200px; /* Set a max-width for large screens */
+    max-width: 1200px; /* Adjust based on your desired layout */
     padding: 20px;
     box-sizing: border-box;
+    z-index: 10; /* Keep the container above the rain */
+}
+
+/* Rain container should span the entire viewport */
+.rain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Allow interaction with game elements */
+    z-index: 0; /* Keep the rain behind the game */
+}
+
+.raindrop {
+    position: absolute;
+    bottom: 100%;
+    width: 2px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.6);
+    animation: fall 1.5s linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh);
+    }
+}
+
+/* For screens wider than 768px, display game elements in a row */
+@media (min-width: 768px) {
+    .container {
+        flex-direction: row;
+        justify-content: space-around;
+    }
 }
 
 .instructions, .hud {
@@ -49,3 +87,4 @@ canvas {
     margin: 10px;
     box-sizing: border-box;
 }
+

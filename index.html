@@ -7,6 +7,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="rain"></div>
+    <script>
+        const rainContainer = document.querySelector('.rain');
+    
+        // Function to create raindrops
+        function createRain() {
+            for (let i = 0; i < 100; i++) {
+                const raindrop = document.createElement('div');
+                raindrop.classList.add('raindrop');
+                
+                // Randomly position the raindrop across the screen
+                raindrop.style.left = `${Math.random() * window.innerWidth}px`;
+                
+                // Randomize the animation duration for a more natural look
+                raindrop.style.animationDuration = `${1 + Math.random()}s`;
+                
+                rainContainer.appendChild(raindrop);
+            }
+        }
+    
+        createRain();
+    </script>
     <div class="container">
         <div id=player class="instructions">
             <h2>How to Play</h2>
@@ -34,7 +56,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny"></script>
     <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
     <script src="https://cdn.jsdelivr.net/npm/jzz-gui-player"></script>
-    <script type="text/javascript" src="shigma.github.io/STG/stg.runtime.js"></script>
     <script src="stg-game.js"></script>
 </body>
 </html>

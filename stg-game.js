@@ -426,6 +426,57 @@ function initializeGame(resetLevel = false) {
     }
 }
 
+function drawElevatorPanel() {
+    const buttonSize = 40; // 按钮的大小
+    const spacing = 10; // 按钮之间的间距
+
+    // 计算中心位置
+    const panelWidth = 3 * buttonSize + 2 * spacing; // 面板的总宽度（三列按钮）
+    const panelHeight = 6 * buttonSize + 5 * spacing; // 按钮的总高度（6行按钮）
+    const panelX = (canvas.width - panelWidth) / 2; // 面板x轴的起点（居中）
+    const panelY = (canvas.height - panelHeight) / 2; // 面板y轴的起点（居中）
+
+    ctx.globalAlpha = 0.4; // 重置透明度
+
+    // 绘制背景面板
+    ctx.fillStyle = '#464547'; // 面板颜色
+    ctx.globalAlpha = 0.3; // 透明度
+    ctx.fillRect(panelX - 10, panelY - 20, panelWidth + 20, panelHeight + 40);
+
+    // 按钮排列
+    const columns = [
+        [1, 2, 3, 4, 5, 6], // 第一列：1到6
+        [13,13,13,13,13,13],               // 第二列：13
+        [7, 8, 9, 10, 11, 12] // 第三列：7到12
+    ];
+
+    // 绘制每个按钮
+    columns.forEach((column, colIndex) => {
+        column.forEach((floor, rowIndex) => {
+            // 计算按钮的位置
+            const buttonX = panelX + colIndex * (buttonSize + spacing);
+            const buttonY = panelY + rowIndex * (buttonSize + spacing);
+            
+            // 绘制按钮
+            ctx.fillStyle = '#555'; // 默认按钮颜色
+            if (floor === currentLevel) {
+                ctx.fillStyle = '#aa2116'; // 高亮当前关卡按钮
+            }
+            ctx.beginPath();
+            ctx.arc(buttonX + buttonSize / 2, buttonY + buttonSize / 2, buttonSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制楼层数字
+            ctx.fillStyle = '#fff'; // 数字颜色
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(floor, buttonX + buttonSize / 2, buttonY + buttonSize / 2);
+        });
+    });
+    ctx.globalAlpha = 1; // 重置透明度
+}
+
 function startGameLoop() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId); // Cancel the previous animation frame
@@ -435,6 +486,7 @@ function startGameLoop() {
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawElevatorPanel();
     if (!playing) {
         startMusic(currentLevel);
     }
@@ -514,3 +566,6 @@ document.addEventListener('keyup', function(event) {
 });
 
 gameLoop();
+
+
+
