@@ -6,6 +6,7 @@ let gameState = 'start';
 let currentLevel = 1;
 const totalLevels = 13;
 let animationFrameId;
+let godtime = false;
 
 // Player object
 const player = {
@@ -28,6 +29,19 @@ const player = {
         this.bullets.push({ x: this.x + this.width / 2 - 2.5, y: this.y, width: 5, height: 10 });
     }
 };
+
+const explosions = [];
+
+function createExplosion(x, y, size, maxSize) {
+    explosions.push({
+        x: x,
+        y: y,
+        size: size,
+        maxSize: maxSize,
+        duration: 30, // Number of frames the explosion will last
+        opacity: 1.0
+    });
+}
 
 // Boss variables
 let bossActive = false;
@@ -67,6 +81,11 @@ function fromBase64() {
 
 // Function to draw the player
 function drawPlayer() {
+    if (godtime) {
+        ctx.globalAlpha = 0.5; // Make the player semi-transparent during godtime
+    } else {
+        ctx.globalAlpha = 1; // Full opacity when not in godtime
+    }
     ctx.fillStyle = 'blue';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
@@ -76,6 +95,8 @@ function drawPlayer() {
         ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 3, 0, Math.PI * 2);
         ctx.fill();
     }
+
+    ctx.globalAlpha = 1;
 }
 
 // Function to draw player bullets
@@ -96,8 +117,8 @@ function drawPlayerBullets() {
 function drawEnemyBullets() {
     ctx.fillStyle = 'yellow';
     enemyBullets.forEach((bullet, index) => {
-        bullet.x += bullet.dx; // Move bullet along x-axis
-        bullet.y += bullet.dy; // Move bullet along y-axis
+        bullet.x += bullet.dx;
+        bullet.y += bullet.dy;
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
 
         // Remove bullets that go off screen
@@ -159,13 +180,9 @@ function drawBoss() {
             boss.speed = -boss.speed;
         }
 
-        if (Math.random() < 0.01){
+        if (Math.random() < 0.1) {
             shootBossBullets(boss);
         }
-
-        
-        
-        
     }
 }
 
@@ -267,7 +284,27 @@ function trianglePattern(i, bulletCount, boss, player) {
     };
 }
 
-let pauseFrames = 0;
+function drawExplosions() {
+    explosions.forEach((explosion, index) => {
+        ctx.save();
+        ctx.globalAlpha = explosion.opacity;
+        ctx.fillStyle = 'orange';
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (explosion.size < explosion.maxSize) {
+            explosion.size += 1;
+        }
+        explosion.opacity -= 0.03;
+
+        // Remove explosion when it finishes
+        if (explosion.opacity <= 0) {
+            explosions.splice(index, 1);
+        }
+    });
+}
 
 // Collision detection and game over logic
 function checkCollisions() {
@@ -287,6 +324,8 @@ function checkCollisions() {
                 boss.health--;
                 player.bullets.splice(bulletIndex, 1);
                 player.points += 500;
+
+                createExplosion(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 5, 10);
 
                 bossHitFlash = true;
                 bossHitTimer = 5; // Duration of the flash
@@ -312,23 +351,18 @@ function checkCollisions() {
             enemyBullets.splice(bulletIndex, 1);
             console.log('Player hit! Lives remaining:', player.lives);
 
+            createExplosion(player.x + player.width / 2, player.y + player.height / 2, 10, 30);
+
             if (player.lives < 0) {
                 resetGame();
             }
 
-            if (player.lives >= 0) {
-                resetPlayerPosition();
-                pauseFrames = 5;
-            }
-
+            setTimeout(() => {
+                godtime = false;
+            }, 1000);
             godtime = true;
         }
     });
-}
-
-function resetPlayerPosition() {
-    player.x = canvas.width / 2 - player.width / 2;
-    player.y = canvas.height - 60;
 }
 
 function updateHUD() {
@@ -405,13 +439,6 @@ function gameLoop() {
         startMusic(currentLevel);
     }
 
-    if (pauseFrames > 0) {
-        // Pause the game loop, decrement the pauseFrames counter
-        pauseFrames--;
-        return; // Do not continue the game loop until pause is over
-    }
-
-
     if (gameState === 'start') {
         drawScreen([{ text: 'Press Enter to Start' }]);
     } else if (gameState === 'playing') {
@@ -423,6 +450,7 @@ function gameLoop() {
         }
         drawEnemyBullets();
         checkCollisions();
+        drawExplosions();
 
         updateHUD();
     } else if (gameState === 'paused') {
