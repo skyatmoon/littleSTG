@@ -1,45 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Read MIDI File</title>
-<script src="https://cdn.jsdelivr.net/npm/jzz"></script>
-<script src="https://cdn.jsdelivr.net/npm/jzz-midi-smf"></script>
-<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny"></script>
-<script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
-<script src="https://cdn.jsdelivr.net/npm/jzz-gui-player"></script>
-</head>
-
-<body>
-  <div id="stg"><!-- 弹幕效果将出现在这里 --></div>
-  <script type="text/javascript" src="shigma.github.io/STG/stg.runtime.js"></script>
-  <script>
-    const { math } = require('@stg/utils')
-
-    module.exports = {
-      title: '波与粒',
-      mounted() {
-        this.setInterval(3, (tick) => {
-          this.emitBullets(9, (index) => ({
-            display: 'rice',
-            origin: {
-              x: 240,
-              y: 280,
-              face: math.sin(tick / 30),
-            },
-            state: {
-              rho: 16,
-              color: 'purple',
-              face: index / 4.5,
-            },
-            mutate(tick) {
-              this.rho += 2 + tick / 40
-              this.polarLocate(this.rho, this.face)
-            },
-          }))
-        })
-      }
-    }
-  </script>
-
-</body>
-</html>
+<div id="id-of-div" style="width: 960px;"></div>
+<script src="dweetdiv.min.js"></script>
+<script>
+  addDweet("id-of-div", `for(s=k=46;k--;s/=.98)for(i=32;i--;)for(j=18;j--;32-k<(i+t^j)**3%40&&x.fillRect(960+(i-16-t%1)*s,540+(j-9)*s,s,s))x.fillStyle=R(v=k*9,v,v)`);
+</script>

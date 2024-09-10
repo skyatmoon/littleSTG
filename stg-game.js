@@ -484,22 +484,8 @@ function startGameLoop() {
     animationFrameId = requestAnimationFrame(gameLoop); // Start a new game loop
 }
 
-let backgroundY = 0;
-let elevatorImage = new Image();
-elevatorImage.src = 'https://www.daibau.ng/showfile.php?id=3800';  // Path to the small image
-
 function animateBackground() {
-    // Simulate the elevator going up by moving the background upwards
-    backgroundY -= 0.5;  // Adjust the speed to match the desired elevator effect
-
-    // When the background moves completely off the screen, reset its position
-    if (backgroundY <= -canvas.height) {
-        backgroundY = 0;
-    }
-
-    // Draw and stretch the small image to fit the entire canvas
-    ctx.drawImage(elevatorImage, 0, backgroundY, canvas.width, canvas.height);
-    ctx.drawImage(elevatorImage, 0, backgroundY + canvas.height, canvas.width, canvas.height);
+    
 }
 
 
