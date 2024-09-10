@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Simple STG Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="rain"></div>
     <div class="container">
+        <div class="rain"></div>
         <div id=player class="instructions">
             <h2>How to Play</h2>
             <p>Use the arrow keys to move:</p>
@@ -24,12 +24,13 @@
         <canvas id="gameCanvas" width="400" height="600"></canvas>
         <div class="hud">
             <h2>Game Info</h2>
-            <p id="lives">Lives: 3</p>
+            <p id="lives">Lives: 13</p>
             <p id="points">Points: 0</p>
             <p id="level">Level: 1</p>
         </div>
     </div>
-    
+
+    <script src="dweetdiv.min.js"></script>
     <script src="stg-game.js"></script>
 </body>
 </html>

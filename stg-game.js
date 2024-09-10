@@ -5,12 +5,16 @@ const rainContainer = document.querySelector('.rain');
 
 // Function to create raindrops
 function createRain() {
+    // Select the container element to get its width
+    const container = document.querySelector('.container');
+    const containerWidth = container.clientWidth; // Get the width of the container
+
     for (let i = 0; i < 100; i++) {
         const raindrop = document.createElement('div');
         raindrop.classList.add('raindrop');
         
-        // Randomly position the raindrop across the screen
-        raindrop.style.left = `${Math.random() * window.innerWidth}px`;
+        // Randomly position the raindrop within the container's width
+        raindrop.style.left = `${Math.random() * containerWidth}px`;
         
         // Randomize the animation duration for a more natural look
         raindrop.style.animationDuration = `${1 + Math.random()}s`;
@@ -20,6 +24,7 @@ function createRain() {
 }
 
 createRain();
+// music
 let audioContext;
 let gainNode;
 let isPlaying = false;
@@ -67,7 +72,24 @@ function playMusic() {
             isPlaying = false;
         }, 26000);}
     }
-music = setInterval(playMusic, 1000);
+var music;
+
+let // ZzFXMicro - Zuper Zmall Zound Zynth - v1.3.1 by Frank Force ~ 1000 bytes
+zzfxV=.3,               // volume
+zzfxX=new AudioContext, // audio context
+zzfx=                   // play sound
+(p=1,k=.05,b=220,e=0,r=0,t=.1,q=0,D=1,u=0,y=0,v=0,z=0,l=0,E=0,A=0,F=0,c=0,w=1,m=0,B=0
+,N=0)=>{let M=Math,d=2*M.PI,R=44100,G=u*=500*d/R/R,C=b*=(1-k+2*k*M.random(k=[]))*d/R,
+g=0,H=0,a=0,n=1,I=0,J=0,f=0,h=N<0?-1:1,x=d*h*N*2/R,L=M.cos(x),Z=M.sin,K=Z(x)/4,O=1+K,
+X=-2*L/O,Y=(1-K)/O,P=(1+h*L)/2/O,Q=-(h+L)/O,S=P,T=0,U=0,V=0,W=0;e=R*e+9;m*=R;r*=R;t*=
+R;c*=R;y*=500*d/R**3;A*=d/R;v*=d/R;z*=R;l=R*l|0;p*=zzfxV;for(h=e+m+r+t+c|0;a<h;k[a++]
+=f*p)++J%(100*F|0)||(f=q?1<q?2<q?3<q?Z(g**3):M.max(M.min(M.tan(g),1),-1):1-(2*g/d%2+2
+)%2:1-4*M.abs(M.round(g/d)-g/d):Z(g),f=(l?1-B+B*Z(d*a/l):1)*(f<0?-1:1)*M.abs(f)**D*(a
+<e?a/e:a<e+m?1-(a-e)/m*(1-w):a<e+m+r?w:a<h-c?(h-a-c)/t*w:0),f=c?f/2+(c>a?0:(a<h-c?1:(
+h-a)/c)*k[a-c|0]/2/p):f,N?f=W=S*T+Q*(T=U)+P*(U=f)-Y*V-X*(V=W):0),x=(b+=u+=y)*M.cos(A*
+H++),g+=x+x*E*Z(a**5),n&&++n>z&&(b+=v,C+=v,n=0),!l||++I%l||(b=C,u=G,n=n||1);p=zzfxX.
+createBuffer(1,h,R);p.getChannelData(0).set(k);b=zzfxX.createBufferSource();
+b.buffer=p;b.connect(zzfxX.destination);b.start()}
 
 // Define game states
 let gameState = 'start';
@@ -80,8 +102,8 @@ let godtime = false;
 const player = {
     x: canvas.width / 2 - 25,
     y: canvas.height - 60,
-    width: 10,
-    height: 10,
+    width: 20,
+    height: 20,
     speed: 5,
     slowSpeed: 2,
     bullets: [],
@@ -91,7 +113,7 @@ const player = {
     moveDown: false,
     isSlow: false,
     canShoot: true,
-    lives: 3,
+    lives: 13,
     points: 0,
     shoot: function() {
         this.bullets.push({ x: this.x + this.width / 2 - 2.5, y: this.y, width: 5, height: 10 });
@@ -123,7 +145,7 @@ function drawPlayer() {
     } else {
         ctx.globalAlpha = 1; // Full opacity when not in godtime
     }
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = 'black';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
     if (player.isSlow) {
@@ -150,21 +172,6 @@ function drawPlayerBullets() {
     });
 }
 
-// Function to draw enemy bullets
-function drawEnemyBullets() {
-    ctx.fillStyle = 'yellow';
-    enemyBullets.forEach((bullet, index) => {
-        bullet.x += bullet.dx;
-        bullet.y += bullet.dy;
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-
-        // Remove bullets that go off screen
-        if (bullet.y > canvas.height || bullet.x < 0 || bullet.x > canvas.width) {
-            enemyBullets.splice(index, 1);
-        }
-    });
-}
-
 // Player movement and shooting
 function updatePlayer() {
     const speed = player.isSlow ? player.slowSpeed : player.speed;
@@ -182,7 +189,7 @@ function updatePlayer() {
 }
 
 // Consolidated function to draw different game screens
-function drawScreen(textLines, bgColor = 'black', textColor = 'white') {
+function drawScreen(textLines, bgColor = 'white', textColor = 'black') {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = textColor;
@@ -207,7 +214,7 @@ function drawBoss() {
                 bossHitFlash = false; // Stop flashing after some time
             }
         } else {
-            ctx.fillStyle = 'purple'; // Default boss color
+            ctx.fillStyle = 'black'; // Default boss color
         }
 
         ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
@@ -240,12 +247,12 @@ function spawnBoss(level) {
 // Function to shoot boss bullets
 function shootBossBullets(boss) {
     if (boss.health > 10) {
-        generateBulletsPattern(boss, 3, 24, linePattern);
+        generateBulletsPattern(boss, 3, 12, circularPattern);
     } else if (boss.health > 5) {
-        generateBulletsPattern(boss, 3, 24, fanPattern);
+        generateBulletsPattern(boss, 3, 12, circularPattern);
     }
     else {
-        generateBulletsPattern(boss, 3, 12, circlePattern);
+        generateBulletsPattern(boss, 3, 12, circularPattern);
     }
 }
 
@@ -260,6 +267,31 @@ function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction)
             dx: dx * bulletSpeed,
             dy: dy * bulletSpeed
         });
+    }
+}
+
+// Function to draw enemy bullets
+function drawEnemyBullets() {
+    ctx.fillStyle = 'yellow'; // Bullet color
+    for (let index = enemyBullets.length - 1; index >= 0; index--) {
+        const bullet = enemyBullets[index];
+
+        // Update bullet position
+        bullet.x += bullet.dx;
+        bullet.y += bullet.dy;
+
+        // Draw the bullet at the updated position
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+        // Remove bullets that go off screen
+        if (
+            bullet.y > canvas.height || 
+            bullet.y < 0 || 
+            bullet.x < 0 || 
+            bullet.x > canvas.width
+        ) {
+            enemyBullets.splice(index, 1); // Safely remove the bullet
+        }
     }
 }
 
@@ -361,7 +393,8 @@ function checkCollisions() {
                 boss.health--;
                 player.bullets.splice(bulletIndex, 1);
                 player.points += 500;
-                a([[0,23]],300,.1,.18,.005,.2,.1,'');
+                zzfx(...[,,129,.01,,.15,,,,,,,,5]);
+                
 
                 createExplosion(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 5, 10);
 
@@ -372,6 +405,7 @@ function checkCollisions() {
                     boss = null;
                     bossActive = false;
                     player.points += 1000;
+                    zzfx(...[,,172,.8,,.8,1,.76,7.7,3.73,-482,.08,.15,,.14]);
                     advanceLevel();
                 }
             }
@@ -387,7 +421,7 @@ function checkCollisions() {
         if (distance < hitboxRadius && !godtime) {
             player.lives -= 1;
             enemyBullets.splice(bulletIndex, 1);
-            console.log('Player hit! Lives remaining:', player.lives);
+            zzfx(...[,,333,.01,0,.9,4,1.9,,,,,,.5,,.6]);
 
             createExplosion(player.x + player.width / 2, player.y + player.height / 2, 10, 30);
 
@@ -439,7 +473,7 @@ function initializeGame(resetLevel = false) {
     // Reset player position and stats
     player.x = canvas.width / 2 - player.width / 2;
     player.y = canvas.height - 60;
-    player.lives = resetLevel ? player.lives : 3; // Reset lives only if not advancing a level
+    player.lives = resetLevel ? player.lives : 13; // Reset lives only if not advancing a level
     player.points = resetLevel ? player.points : 0; // Retain points if advancing a level
     player.bullets = [];
     player.moveLeft = false;
@@ -465,54 +499,55 @@ function initializeGame(resetLevel = false) {
 }
 
 function drawElevatorPanel() {
-    const buttonSize = 40; // 按钮的大小
-    const spacing = 10; // 按钮之间的间距
+    const buttonSize = 40; // Size of the buttons
+    const spacing = 10; // Spacing between the buttons
 
-    // 计算中心位置
-    const panelWidth = 3 * buttonSize + 2 * spacing; // 面板的总宽度（三列按钮）
-    const panelHeight = 6 * buttonSize + 5 * spacing; // 按钮的总高度（6行按钮）
-    const panelX = (canvas.width - panelWidth) / 2; // 面板x轴的起点（居中）
-    const panelY = (canvas.height - panelHeight) / 2; // 面板y轴的起点（居中）
+    // Calculate the center position
+    const panelWidth = 3 * buttonSize + 2 * spacing; // Total width of the panel (three columns of buttons)
+    const panelHeight = 6 * buttonSize + 5 * spacing; // Total height (six rows of buttons)
+    const panelX = (canvas.width - panelWidth) / 2; // X-axis start (centered)
+    const panelY = (canvas.height - panelHeight) / 2; // Y-axis start (centered)
 
-    ctx.globalAlpha = 0.4; // 重置透明度
+    ctx.globalAlpha = 0.4; // Set transparency
 
-    // 绘制背景面板
-    ctx.fillStyle = '#464547'; // 面板颜色
-    ctx.globalAlpha = 0.3; // 透明度
-    ctx.fillRect(panelX - 10, panelY - 20, panelWidth + 20, panelHeight + 40);
+    // Draw the panel border (black board outline only, no fill)
+    ctx.strokeStyle = '#000'; // Black outline
+    ctx.lineWidth = 2; // Border thickness
+    ctx.strokeRect(panelX - 10, panelY - 20, panelWidth + 20, panelHeight + 40);
 
-    // 按钮排列
+    // Button layout
     const columns = [
-        [1, 2, 3, 4, 5, 6], // 第一列：1到6
-        [13,13,13,13,13,13],               // 第二列：13
-        [7, 8, 9, 10, 11, 12] // 第三列：7到12
+        [1, 2, 3, 4, 5, 6], // First column: 1 to 6
+        [13, 13, 13, 13, 13, 13], // Second column: 13
+        [7, 8, 9, 10, 11, 12] // Third column: 7 to 12
     ];
 
-    // 绘制每个按钮
+    // Draw each button in black and white
     columns.forEach((column, colIndex) => {
         column.forEach((floor, rowIndex) => {
-            // 计算按钮的位置
+            // Calculate button position
             const buttonX = panelX + colIndex * (buttonSize + spacing);
             const buttonY = panelY + rowIndex * (buttonSize + spacing);
-            
-            // 绘制按钮
-            ctx.fillStyle = '#555'; // 默认按钮颜色
+
+            // Draw button in grayscale
+            ctx.fillStyle = '#000'; // Default button color (black)
             if (floor === currentLevel) {
-                ctx.fillStyle = '#aa2116'; // 高亮当前关卡按钮
+                ctx.fillStyle = '#FF0000'; // Highlight current level button (white)
             }
             ctx.beginPath();
             ctx.arc(buttonX + buttonSize / 2, buttonY + buttonSize / 2, buttonSize / 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // 绘制楼层数字
-            ctx.fillStyle = '#fff'; // 数字颜色
+            // Draw floor numbers in white (if button is black) or black (if button is white)
+            ctx.fillStyle = (floor === currentLevel) ? '#000' : '#fff'; // Inverse text color
             ctx.font = '20px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(floor, buttonX + buttonSize / 2, buttonY + buttonSize / 2);
         });
     });
-    ctx.globalAlpha = 1; // 重置透明度
+
+    ctx.globalAlpha = 1; // Reset transparency
 }
 
 function startGameLoop() {
@@ -526,38 +561,51 @@ function animateBackground() {
     
 }
 
+var fps = 30;
+var now;
+var then = Date.now();
+var interval = 1000/fps;
+var delta;
 
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    animateBackground();
-    drawElevatorPanel();
 
-    if (gameState === 'start') {
-        drawScreen([{ text: 'Press Enter to Start' }]);
-    } else if (gameState === 'playing') {
-        updatePlayer();
-        drawPlayerBullets();
-        drawPlayer();
-        if (bossActive) {
-            drawBoss();
+    now = Date.now();
+    delta = now - then;
+
+    if (delta > interval) {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawElevatorPanel();
+        
+
+        if (gameState === 'start') {
+            drawScreen([{ text: 'Press Enter to Start' }]);
+        } else if (gameState === 'playing') {
+            updatePlayer();
+            drawPlayer();
+            if (bossActive) {
+                drawBoss();
+            }
+            checkCollisions();
+            drawPlayerBullets();
+            drawEnemyBullets();
+            drawExplosions();
+
+            updateHUD();
+        } else if (gameState === 'paused') {
+            drawScreen([
+                { text: 'Paused' },
+                { text: 'Press Space to Resume' },
+                { text: 'Press Escape to Leave' }
+            ]);
+        } else if (gameState === 'levelComplete') { // New state for level complete
+            drawScreen([{ text: `Level ${currentLevel - 1} Complete!` }, { text: 'Press Enter to Continue' }]);
+            // playing = false;
+        } else if (gameState === 'gameOver') {
+            resetGame();
+            // playing = false;
         }
-        drawEnemyBullets();
-        checkCollisions();
-        drawExplosions();
-
-        updateHUD();
-    } else if (gameState === 'paused') {
-        drawScreen([
-            { text: 'Paused' },
-            { text: 'Press Space to Resume' },
-            { text: 'Press Escape to Leave' }
-        ], 'rgba(0, 0, 0, 0.7)');
-    } else if (gameState === 'levelComplete') { // New state for level complete
-        drawScreen([{ text: `Level ${currentLevel - 1} Complete!` }, { text: 'Press Enter to Continue' }]);
-        // playing = false;
-    } else if (gameState === 'gameOver') {
-        resetGame();
-        // playing = false;
+        then = now - (delta % interval);
     }
 
     if (gameState !== 'gameOver') {
@@ -572,6 +620,7 @@ initializeGame();
 document.addEventListener('keydown', function(event) {
     if (gameState === 'start' && event.key === 'Enter') {
         gameState = 'playing';
+        music = setInterval(playMusic, 1000);
         spawnBoss(currentLevel); // Start with the first boss
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused';
@@ -580,6 +629,7 @@ document.addEventListener('keydown', function(event) {
     } else if (gameState === 'paused' && event.key === 'Escape') {
         gameState = 'gameOver';
     } else if (gameState === 'gameOver' && event.key === 'Enter') {
+        clearInterval(music);
         initializeGame();
         startGameLoop();
     } else if (gameState === 'levelComplete' && event.key === 'Enter') { // New condition for 'levelComplete'
@@ -607,8 +657,3 @@ document.addEventListener('keyup', function(event) {
 });
 
 gameLoop();
-
-//music
-
-
-
