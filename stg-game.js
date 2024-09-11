@@ -67,7 +67,7 @@ function playMusic() {
         return;
     } else{
         isPlaying = true;
-        a(musicnotes, 220, .9, .5, .005, .2, .1, 'triangle');
+        a(musicnotes, 220, .9, .1, .005, .2, .1, 'triangle');
         setTimeout(() => {
             isPlaying = false;
         }, 26000);}
@@ -235,11 +235,11 @@ function startBossIntro() {
 
 function drawBossIntro() {
     if (currentLevel === 1) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Hey!' }, { text: 'Bad Raining, Right?' }, { text: 'Oh! Clam Down!' }], 'black', 'white');
     } else if (currentLevel === 2) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Where I Am?' }, { text: 'The Elevator?' }, { text: 'Who Are You?' }], 'black', 'white');
     } else if (currentLevel === 3) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Help!' }, { text: 'Take Me Out!' }, { text: 'Let Me Back Home!' }], 'black', 'white');
     } else if (currentLevel === 4) {
         drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
     } else if (currentLevel === 5) {
@@ -654,12 +654,13 @@ function animateBackground(t, level) {
 
     // each level has a different background
     if (level === 1) {
-        
+        //nothing
     } else if (level === 2) {
         x.shadowColor=`hsl(${t*400},99%,50%)`
-        x.shadowBlur=30
+        x.shadowBlur=30 //cyberpunk style, you are in dream
     } else if (level === 3) {
       c.width|=0;for(let i=0;i<14;i++){x.font='20px monospace';x.fillStyle=R(255*S(T(t)),0,0);x.fillText('WARING!',0,(i*99+t*333)%600);x.fillText('WARING!',320,(i*99+t*333)%600)}
+      // waring!
     } else if (level === 4) {
         l=(v,y,w,z)=>{x.beginPath(x.lineWidth=9);x.moveTo(v,y);x.lineTo(w,z);x.stroke()}
         c.width|=0
