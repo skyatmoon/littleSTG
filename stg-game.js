@@ -114,7 +114,6 @@ const player = {
     isSlow: false,
     canShoot: true,
     lives: 13,
-    points: 0,
     shoot: function() {
         this.bullets.push({ x: this.x + this.width / 2 - 2.5, y: this.y, width: 5, height: 10 });
     }
@@ -138,6 +137,8 @@ let bossActive = false;
 let boss = null;
 const enemyBullets = [];
 
+
+
 // Function to draw the player
 function drawPlayer() {
     if (godtime) {
@@ -145,7 +146,7 @@ function drawPlayer() {
     } else {
         ctx.globalAlpha = 1; // Full opacity when not in godtime
     }
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'white';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
     if (player.isSlow) {
@@ -203,6 +204,64 @@ function drawScreen(textLines, bgColor = 'white', textColor = 'black') {
 
 let bossHitFlash = false;
 let bossHitTimer = 0;
+let gamePhase = 'flyingToBoss'; // Add different phases: 'flyingToBoss', 'bossIntro', 'fightingBoss'
+let preBossFlyTime = 2000; // Time for the player to fly before the boss appears
+let bossIntroTime = 3000; // Time for the boss to say something before the fight
+let bossReady = false;
+
+function startFlyingToBoss() {
+    gamePhase = 'flyingToBoss';
+    setTimeout(() => {
+        startBossIntro();
+    }, preBossFlyTime); // After flying for a while, go to the boss intro
+}
+
+function updateFlyingToBoss() {
+    // Move player up
+    if (player.y > 100) { // Make the player fly to around the top part of the screen
+        player.y -= 1;
+    }
+    drawPlayer(); // Continue drawing the player during the flying phase
+}
+
+function startBossIntro() {
+    // console.log('Starting boss intro');
+    gamePhase = 'bossIntro';
+    setTimeout(() => {
+        bossReady = true;
+        gamePhase = 'fightingBoss';
+    }, bossIntroTime); // After showing the message, start the boss fight
+}
+
+function drawBossIntro() {
+    if (currentLevel === 1) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 2) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 3) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 4) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 5) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 6) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 7) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 8) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 9) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 10) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 11) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 12) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    } else if (currentLevel === 13) {
+        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+    }                              
+}
 
 function drawBoss() {
     if (boss) {
@@ -238,10 +297,34 @@ function spawnBoss(level) {
         y: 50,
         width: 150,
         height: 150,
-        health: 20,//50 + (level - 1) * 10,  // Increase health by 10 for each level
+        maxHealth: 1 + (level - 1) * 10,  // Base health increases with level
+        health: 1 + (level - 1) * 10, // The current health starts at the max value
         speed: 1,// Increase speed slightly each level
     };
     bossActive = true;
+}
+
+function drawBossHealthBar() {
+    const barWidth = canvas.width - 40; // Full width minus some padding
+    const barHeight = 20;
+    const barX = 20; // Padding from the left edge
+    const barY = 10; // Padding from the top edge
+
+    // Calculate the current health percentage
+    const healthPercentage = boss.health / boss.maxHealth;
+
+    // Draw the health bar background (gray)
+    ctx.fillStyle = '#444';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    // Draw the current health bar (red for health)
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(barX, barY, barWidth * healthPercentage, barHeight);
+
+    // Optional: Add a border for the health bar
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
 }
 
 // Function to shoot boss bullets
@@ -272,7 +355,9 @@ function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction)
 
 // Function to draw enemy bullets
 function drawEnemyBullets() {
-    ctx.fillStyle = 'yellow'; // Bullet color
+    if (currentLevel === 13) {
+        ctx.fillStyle = 'black';
+    } else {ctx.fillStyle = 'yellow';}
     for (let index = enemyBullets.length - 1; index >= 0; index--) {
         const bullet = enemyBullets[index];
 
@@ -392,7 +477,6 @@ function checkCollisions() {
             ) {
                 boss.health--;
                 player.bullets.splice(bulletIndex, 1);
-                player.points += 500;
                 zzfx(...[,,129,.01,,.15,,,,,,,,5]);
                 
 
@@ -404,7 +488,6 @@ function checkCollisions() {
                 if (boss.health <= 0) {
                     boss = null;
                     bossActive = false;
-                    player.points += 1000;
                     zzfx(...[,,172,.8,,.8,1,.76,7.7,3.73,-482,.08,.15,,.14]);
                     advanceLevel();
                 }
@@ -439,7 +522,6 @@ function checkCollisions() {
 
 function updateHUD() {
     document.getElementById('lives').textContent = `Lives: ${player.lives}`;
-    document.getElementById('points').textContent = `Points: ${player.points}`;
     document.getElementById('level').textContent = `Level: ${currentLevel}`; // Update level display
 }
 
@@ -474,7 +556,6 @@ function initializeGame(resetLevel = false) {
     player.x = canvas.width / 2 - player.width / 2;
     player.y = canvas.height - 60;
     player.lives = resetLevel ? player.lives : 13; // Reset lives only if not advancing a level
-    player.points = resetLevel ? player.points : 0; // Retain points if advancing a level
     player.bullets = [];
     player.moveLeft = false;
     player.moveRight = false;
@@ -557,41 +638,111 @@ function startGameLoop() {
     animationFrameId = requestAnimationFrame(gameLoop); // Start a new game loop
 }
 
-function animateBackground() {
-    
+var S = Math.sin;
+var C = Math.cos;
+var T = Math.tan;
+function R(r,g,b,a) {
+    a = a === undefined ? 1 : a;
+    return 'rgba(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ',' + a + ')';
+  }
+
+function animateBackground(t, level) {
+    let x = ctx;
+    let c = canvas;
+    var w = 400;
+    var h = 600;
+
+    // each level has a different background
+    if (level === 1) {
+        
+    } else if (level === 2) {
+        x.shadowColor=`hsl(${t*400},99%,50%)`
+        x.shadowBlur=30
+    } else if (level === 3) {
+      c.width|=0;for(let i=0;i<14;i++){x.font='20px monospace';x.fillStyle=R(255*S(T(t)),0,0);x.fillText('WARING!',0,(i*99+t*333)%600);x.fillText('WARING!',320,(i*99+t*333)%600)}
+    } else if (level === 4) {
+        l=(v,y,w,z)=>{x.beginPath(x.lineWidth=9);x.moveTo(v,y);x.lineTo(w,z);x.stroke()}
+        c.width|=0
+        for(i=8;i--;)l(600,-2e3,i*404,h=1000);for(i=40;i--;)l(0,y=3**((t+i/3)%9%h),2e3,y) 
+    } else if (level === 5) {
+        for(s=k=38;k--;s/=.97)for(i=50;i--;)for(j=28;j--;30-k<(i+t^j)**3%33&&x.fillRect(400+(j-14)*s,600+(i-22-t%1)*s,s,s))x.fillStyle=R(v=90-(k*2),v*Math.sin(t*.2),v*Math.cos(t*.01))
+    } else if (level === 6) {
+        x.shadowColor=`hsl(${t*400},99%,50%)`
+        x.shadowBlur=30
+        for(s=k=38;k--;s/=.97)for(i=50;i--;)for(j=28;j--;30-k<(i+t^j)**3%33&&x.fillRect(400+(j-14)*s,600+(i-22-t%1)*s,s,s))x.fillStyle=R(v=90-(k*2),v*Math.sin(t*.2),v*Math.cos(t*.01))
+    } else if (level === 7) {
+        x.shadowBlur=0
+        for(s=k=29;k--;s/=.81)for(j=25;i=--j>>2;e%5<i&&j-18&&x.fillRect(300+j%4*s-s/.4-k*9,400+i*s-4.8*s,s,s))e=j^k/8+t*6,x.fillStyle=R(v=e%7*k,v,v)
+    } else if (level === 8) {
+        for(s=i=w=c.width|=0;i--;s*=.98)j=i-t*30|0,x.fillRect(200-(j%9?j%2?-.5:.5:.6)*s+(w-i)*S(j/199),200+s,j%9?s/9+9:s*1.3,s/9+2)
+    } else if (level === 9) {
+        x.shadowColor=`hsl(${t*400},99%,50%)`
+        x.shadowBlur=30
+        c.width|=0;for(let i=0;i<14;i++){x.font='20px monospace';x.fillStyle=R(255*S(T(t)),0,0);x.fillText('13!',0,(i*99+t*333)%600);x.fillText('13!',320,(i*99+t*333)%600)}
+    } else if (level === 10) {
+        x.shadowColor=`hsl(${t*400},99%,50%)`
+        x.shadowBlur=30
+        for(s=k=29;k--;s/=.81)for(j=25;i=--j>>2;e%5<i&&j-18&&x.fillRect(300+j%4*s-s/.4-k*9,400+i*s-4.8*s,s,s))e=j^k/8+t*6,x.fillStyle=R(v=e%7*k,v,v)
+    } else if (level === 11) {
+        x.shadowBlur=0
+        x.fillStyle = 'black';
+        x.fillRect(0, 0, c.width, c.height);
+    } else if (level === 12) {
+        c.width|=0
+        for(i=360;i--;)x.lineTo((S(t-i)*i+t*S(t+i))*3,(S(t+(i&i/2))*(2e3*S((i&(256*t))|i)*t-i))/(t+t))
+        x.fill`evenodd`
+    } else if (level === 13) {
+        for(i=100;i--;)for(j=60;j--;x.fillStyle=`hsl(${180*(C(i/10+t/2)**3+S(j/10+t/2))+60*t},99%,50%)`)x.fillRect(10*i,10*j,10,10)
+    }
 }
 
-var fps = 30;
+var fps = 60;
 var now;
 var then = Date.now();
 var interval = 1000/fps;
 var delta;
+var time = 0;
+var frame = 0;
 
 function gameLoop() {
 
     now = Date.now();
     delta = now - then;
+    time = frame / 60;
+
+    if (time * 60 | 0 == frame - 1) {
+      time += 0.000001;
+    }
+
+    frame++;
 
     if (delta > interval) {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        animateBackground(time, currentLevel);
         drawElevatorPanel();
         
 
         if (gameState === 'start') {
             drawScreen([{ text: 'Press Enter to Start' }]);
         } else if (gameState === 'playing') {
-            updatePlayer();
-            drawPlayer();
-            if (bossActive) {
-                drawBoss();
+            if (gamePhase === 'flyingToBoss') {
+                updateFlyingToBoss(); // Fly the player to the boss
+            } else if (gamePhase === 'bossIntro') {
+                drawBossIntro(); // Show the boss message
+            } else if (gamePhase === 'fightingBoss') {
+                updatePlayer();
+                drawPlayer();
+                if (bossReady) {
+                    drawBoss();
+                    drawBossHealthBar();
+                }
+                checkCollisions();
+                drawPlayerBullets();
+                drawEnemyBullets();
+                drawExplosions();
+                updateHUD();
             }
-            checkCollisions();
-            drawPlayerBullets();
-            drawEnemyBullets();
-            drawExplosions();
-
-            updateHUD();
         } else if (gameState === 'paused') {
             drawScreen([
                 { text: 'Paused' },
@@ -622,6 +773,7 @@ document.addEventListener('keydown', function(event) {
         gameState = 'playing';
         music = setInterval(playMusic, 1000);
         spawnBoss(currentLevel); // Start with the first boss
+        startFlyingToBoss();
     } else if (gameState === 'playing' && event.key === 'Escape') {
         gameState = 'paused';
     } else if (gameState === 'paused' && event.key === ' ') {
@@ -634,7 +786,9 @@ document.addEventListener('keydown', function(event) {
         startGameLoop();
     } else if (gameState === 'levelComplete' && event.key === 'Enter') { // New condition for 'levelComplete'
         gameState = 'playing';
+        gamePhase = 'flyingToBoss';
         spawnBoss(currentLevel);
+        startFlyingToBoss();
         startGameLoop();
     }
 });
