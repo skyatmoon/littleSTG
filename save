@@ -1,0 +1,73 @@
+A = new AudioContext,
+m = A.createBuffer(1, 1e6, 44100);
+
+// Play a piano note
+musicon = 1;
+note = 0;
+A = new (self.AudioContext||self.webkitAudioContext),
+m = A.createBuffer(1,1e6,44100);
+track = [66,71,,73,,74,,,,76,,73,,74,,71,,73,,71,,70,,71,,73,,76,,74,,73,,74,,76,78,78,,78,,76,78,76,78,79,,73,,74,,76,,74,,76,,78,,71,,71,,73,74,74,76,,73,,73,,74,,71];
+
+// Play a piano note
+piano = e => {
+  var V,v,p,c,b,w,r,D,i,s,u,D;
+  
+  for(
+  
+    // V: note length in seconds
+    V = 4,
+    
+    // Temp vars for guitar synthesis
+    v = [],
+    p = c = .8,
+    
+    // Modulation
+    // This function generates the i'th sample of a sinusoidal signal with a specific frequency and amplitude
+    b = (e,t,a,i) => Math.sin(e / t * 6.28 * a + i),
+    
+    // Instrument synthesis
+    w = (e,t) => Math.sin(e / 44100 * t * 6.28 + b(e,44100,t,0) ** 2 + .15 * b(e,44100,t,.9) + .1 * b(e,44100,t,.1)),
+    
+    // Sound samples
+    D = [],
+    
+    // Loop on all the samples
+    i = 0;
+    i < 44100 * V;
+    i++
+  ){
+  
+    // Fill the samples array
+    D[i] =
+    
+      // The first 88 samples represent the note's attack
+      i < 88 
+      ? i / 88.2 * w(i,e) / 19
+      
+      // The other samples represent the rest of the note
+      : (1 - (i - 88.2) / (44100 * (V - .002))) ** ((.5 * Math.log(1e4 * e / 44100)) ** 2) * w(i,e) / 9;
+  }
+  
+  // Play the note
+  
+  m.getChannelData(0).set(D),
+  s = A.createBufferSource(),
+  s.buffer = m,
+  s.connect(A.destination),
+  s.start()
+}
+
+
+play_note = n => {
+  if(musicon && n>>32) piano(440*1.06**(n - 87));
+}
+
+play_next_note = () => {
+  if(track[note]){
+    play_note(track[note]);
+    time = new Date();
+  }
+  note++;
+  note %= (track.length + 1);
+}
+musicint = setInterval(play_next_note,500);

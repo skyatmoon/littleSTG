@@ -97,6 +97,13 @@ let currentLevel = 1;
 const totalLevels = 13;
 let animationFrameId;
 let godtime = false;
+var fps = 60;
+var now;
+var then = Date.now();
+var interval = 1000/fps;
+var delta;
+var time = 0;
+var frame = 0;
 
 // Player object
 const player = {
@@ -283,7 +290,7 @@ function drawBoss() {
             boss.speed = -boss.speed;
         }
 
-        if (Math.random() < 0.1) {
+        if (frame % 5 === 0) {
             shootBossBullets(boss);
         }
     }
@@ -297,8 +304,8 @@ function spawnBoss(level) {
         y: 50,
         width: 150,
         height: 150,
-        maxHealth: 1 + (level - 1) * 10,  // Base health increases with level
-        health: 1 + (level - 1) * 10, // The current health starts at the max value
+        maxHealth: 50 + (level - 1) * 10,  // Base health increases with level
+        health: 50 + (level - 1) * 10, // The current health starts at the max value
         speed: 1,// Increase speed slightly each level
     };
     bossActive = true;
@@ -326,20 +333,15 @@ function drawBossHealthBar() {
     ctx.lineWidth = 2;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
 }
-
+let angleOffset = 0;
 // Function to shoot boss bullets
 function shootBossBullets(boss) {
-    if (boss.health > 10) {
-        generateBulletsPattern(boss, 3, 12, circularPattern);
-    } else if (boss.health > 5) {
-        generateBulletsPattern(boss, 3, 12, circularPattern);
-    }
-    else {
-        generateBulletsPattern(boss, 3, 12, circularPattern);
-    }
+    
+    generateBulletsPattern(boss, 1, 16, butterflyCurvePattern, Math.PI / 90);
+    
 }
 
-function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction) {
+function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction, anglechange) {
     for (let i = 0; i < bulletCount; i++) {
         const { dx, dy } = patternFunction(i, bulletCount, boss, player); // Include player position
         enemyBullets.push({
@@ -347,10 +349,12 @@ function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction)
             y: boss.y + boss.height / 2,
             width: 5,
             height: 5,
-            dx: dx * bulletSpeed,
-            dy: dy * bulletSpeed
+            dx: (dx + 0.01) * bulletSpeed,
+            dy: (dy + 0.01) * bulletSpeed
         });
     }
+    angleOffset += anglechange;
+   
 }
 
 // Function to draw enemy bullets
@@ -367,6 +371,7 @@ function drawEnemyBullets() {
 
         // Draw the bullet at the updated position
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        // ctx.fillText('1 3', bullet.x, bullet.y, bullet.width, bullet.height);
 
         // Remove bullets that go off screen
         if (
@@ -379,65 +384,94 @@ function drawEnemyBullets() {
         }
     }
 }
+//combine got new
+//level 3: generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 27); generateBulletsPattern(boss, 1, 8, subwayPattern, Math.PI / 60);
+//leve;4 generateBulletsPattern(boss, 2, 6, decircularPattern, Math.PI / 180); generateBulletsPattern(boss, 2, 6, circularPattern, Math.PI / 180);
 
-function circularPattern(i, bulletCount) {
-    const angle = (Math.PI * 2 / bulletCount) * i;
+function circularPattern(i, bulletCount, boss, player) {
+    boss.speed = 0;
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    return {
+        dx: Math.cos(angle),
+        dy: Math.sin(angle)
+    };//level 2 boss pattern, boss speed = 0, generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 180);
+    //level 1 boss pattern, boss speed = 0, generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 27);
+}
+
+function lissajousCurvePattern(i, bulletCount, boss, player) {
+    const a = 3; // Frequency along the x-axis
+    const b = 2; // Frequency along the y-axis
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    return {
+        dx: Math.sin(a * angle),
+        dy: Math.sin(b * angle)
+    };
+}
+
+function butterflyCurvePattern(i, bulletCount, boss, player) {
+    boss.speed = 0;
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    const r = Math.exp(Math.sin(angle)) - 2 * Math.cos(4 * angle) + Math.pow(Math.sin((2 * angle - Math.PI) / 24), 5);
+    return {
+        dx: r * Math.cos(angle),
+        dy: r * Math.sin(angle)
+    };
+}
+
+function hypotrochoidPattern(i, bulletCount, boss, player) {
+    const R = 6; // Radius of the larger circle
+    const r = 2; // Radius of the smaller circle
+    const d = 4; // Distance of the point from the smaller circle
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    const x = (R - r) * Math.cos(angle) + d * Math.cos(((R - r) / r) * angle);
+    const y = (R - r) * Math.sin(angle) - d * Math.sin(((R - r) / r) * angle);
+    return {
+        dx: x / R,
+        dy: y / R
+    };
+}
+
+function decircularPattern(i, bulletCount, boss, player) {
+    boss.speed = 0;
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    return {
+        dx: Math.sin(angle),
+        dy: Math.cos(angle)
+    };
+}//combine
+
+function subwayPattern(i, bulletCount, boss, player) {
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
     return {
         dx: Math.cos(angle),
         dy: Math.sin(angle)
     };
+    //level 7 boss pattern, boss speed = 1, generateBulletsPattern(boss, 3, 16, subwayPattern, Math.PI / 120);
+    //level 13 boss pattern, boss speed = 1, generateBulletsPattern(boss, 1, 32, subwayPattern, Math.PI / 60);
 }
 
-function spiralPattern(i, bulletCount) {
-    const angle = (Math.PI * 2 / bulletCount) * i + (Date.now() % 1000) / 1000; // slowly rotate over time
+function trochoidFlowerPattern(i, bulletCount, boss, player) {
+    // boss.speed = 0;
+    const k = 4; // Controls the number of petals
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
     return {
-        dx: Math.cos(angle),
-        dy: Math.sin(angle)
+        dx: Math.cos(k * angle) * Math.cos(angle),
+        dy: Math.sin(k * angle) * Math.sin(angle)
     };
-}
+}//level 5 generateBulletsPattern(boss, 3, 8, trochoidFlowerPattern, Math.PI / 60); 
 
-function wavePattern(i, bulletCount) {
+function trochoidFlowerPattern2(i, bulletCount, boss, player) {
+    // boss.speed = 0;
+    const k = 2; // Controls the number of petals
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
     return {
-        dx: Math.sin(i / bulletCount * Math.PI * 2), // Creates a wave along the x-axis
-        dy: 1
+        dx: Math.cos(k * angle) * Math.cos(angle),
+        dy: Math.sin(k * angle) * Math.sin(angle)
     };
-}
+}//level 12 generateBulletsPattern(boss, 1, 16, trochoidFlowerPattern2, Math.PI / 72);
 
-function linePattern(i, bulletCount, boss, player) {
-    const angleToPlayer = Math.atan2(player.y - boss.y, player.x - boss.x); // Angle toward player
-    return {
-        dx: Math.cos(angleToPlayer),
-        dy: Math.sin(angleToPlayer)
-    };
-}
 
-function circlePattern(i, bulletCount, boss, player) {
-    const angle = (Math.PI * 2 / bulletCount) * i;
-    return {
-        dx: Math.cos(angle),
-        dy: Math.sin(angle)
-    };
-}
-
-function fanPattern(i, bulletCount, boss, player) {
-    const fanAngle = Math.PI / 4; // The total angle of the fan (45 degrees)
-    const baseAngle = Math.atan2(player.y - boss.y, player.x - boss.x); // Base angle toward player
-    const angle = baseAngle - fanAngle / 2 + (fanAngle / (bulletCount - 1)) * i; // Spread bullets
-    return {
-        dx: Math.cos(angle),
-        dy: Math.sin(angle)
-    };
-}
-
-function trianglePattern(i, bulletCount, boss, player) {
-    const baseAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
-    const offset = 0.3; // Spread out the bullets to form a triangle
-    return {
-        dx: Math.cos(baseAngle + (i % 2 === 0 ? offset : -offset)), // Alternate sides
-        dy: Math.sin(baseAngle + (i % 2 === 0 ? offset : -offset))
-    };
-}
-
+////////////////////////////////////////////////////////////////////////////////////////
 function drawExplosions() {
     explosions.forEach((explosion, index) => {
         ctx.save();
@@ -565,11 +599,12 @@ function initializeGame(resetLevel = false) {
     player.canShoot = true;
     playing = false;
     
+    
     // Reset boss and enemy bullets
     bossActive = false;
     boss = null;
     enemyBullets.length = 0;
-
+    angleOffset = 0;
     // Reset or advance level
     if (!resetLevel) {
         currentLevel = 1;
@@ -696,14 +731,6 @@ function animateBackground(t, level) {
         for(i=100;i--;)for(j=60;j--;x.fillStyle=`hsl(${180*(C(i/10+t/2)**3+S(j/10+t/2))+60*t},99%,50%)`)x.fillRect(10*i,10*j,10,10)
     }
 }
-
-var fps = 60;
-var now;
-var then = Date.now();
-var interval = 1000/fps;
-var delta;
-var time = 0;
-var frame = 0;
 
 function gameLoop() {
 
