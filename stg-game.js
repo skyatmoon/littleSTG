@@ -104,13 +104,14 @@ var interval = 1000/fps;
 var delta;
 var time = 0;
 var frame = 0;
+var score = 0;
 
 // Player object
 const player = {
     x: canvas.width / 2 - 25,
     y: canvas.height - 60,
-    width: 20,
-    height: 20,
+    width: 50,
+    height: 50,
     speed: 5,
     slowSpeed: 2,
     bullets: [],
@@ -138,13 +139,68 @@ function createExplosion(x, y, size, maxSize) {
         opacity: 1.0
     });
 }
+const palette = '1c130af0ebea9391900f1945376ed65d8f24eda20ceb6320';
+
+const icons = {
+  "boss132": "H@@@@AHIIIIA@IJRJ@@QJIJ@@IJRJ@@IJIJ@@IJRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+  "boss122": "H@@@@AHIIIIA@IJRJ@@QJIJ@@IJQI@@IJJI@@IJRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+  "boss112": "H@@@@AHIIIIA@IJIJ@@QJQJ@@IJIJ@@IJIJ@@IJIJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+  "boss102": "H@@@@AHIIIIA@IJQI@@QJJJ@@IJJJ@@IJJJ@@IJQI@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+  "boss92": "H@@@@AHIIIIA@IIRJ@@IJJJ@@IIRJ@@IIIJ@@IIIJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss82": "H@@@@AHIIIIA@IIRJ@@IJJJ@@IIRJ@@IIJJ@@IIRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss72": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIIJ@@IIIJ@@IIIJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss62": "H@@@@AHIIIIA@IIRJ@@IJJI@@IIRJ@@IIJJ@@IIRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss52": "H@@@@AHIIIIA@IIRJ@@IJJI@@IIRJ@@IIIJ@@IIRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss42": "H@@@@AHIIIIA@IIJJ@@IJJJ@@IIRJ@@IIIJ@@IIIJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss32": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIRJ@@IIIJ@@IIRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss22": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIRJ@@IIJI@@IIRJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss12": "H@@@@AHIIIIA@IIIJ@@IJQJ@@IIIJ@@IIIJ@@IIIJ@@IIII@H@II@A@IIII@@@II@@@@HA@@",
+    "boss131": "H@@@@AHIIIIA@IJRJ@@QJIJ@@IJRJ@@IJIJ@@IJRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss121": "H@@@@AHIIIIA@IJRJ@@QJIJ@@IJRJ@@IJJI@@IJRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss111": "H@@@@AHIIIIA@IJIJ@@QJQJ@@IJIJ@@IJIJ@@IJIJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss101": "H@@@@AHIIIIA@IJRJ@@QJJJ@@IJJJ@@IJJJ@@IJRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss91": "H@@@@AHIIIIA@IIRJ@@IJJJ@@IIRJ@@IIIJ@@IIIJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss81": "H@@@@AHIIIIA@IIRJ@@IJJJ@@IIRJ@@IIJJ@@IIRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss71": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIIJ@@IIIJ@@IIIJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss61": "H@@@@AHIIIIA@IIRJ@@IJJI@@IIRJ@@IIJJ@@IIRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss51": "H@@@@AHIIIIA@IIRJ@@IJJI@@IIRJ@@IIIJ@@IIRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss41": "H@@@@AHIIIIA@IIJJ@@IJJJ@@IIRJ@@IIIJ@@IIIJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss31": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIRJ@@IIIJ@@IIRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss21": "H@@@@AHIIIIA@IIRJ@@IJIJ@@IIRJ@@IIJI@@IIRJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "boss11": "H@@@@AHIIIIA@IIIJ@@IJQJ@@IIIJ@@IIIJ@@IIIJ@@IIII@@@II@@@HIIA@@AIIH@@@HA@@",
+    "player1": "@`hED@`Dmm`D`hmmEDDmmmm`DPQJB`DPRRB`Dj}oU`DPmmB`DhmmE``@BP@D`DBP`D@`AHD@",
+    "player2": "@PhEB@PBmmPBPhmmEBBmmmmPBPQJBPRPRRBRBj}oUPB@mm@PBhmmEPP@BP@BPBBPPB@PAHB@",
+};
+
+const drawIcon = (ctx, icon, x, y, scale, flash) => {
+  const imageData = [];
+
+  [...icon].map(c => {
+    const z = c.charCodeAt(0);
+    imageData.push(z & 7); // Low 3 bits
+    imageData.push((z >> 3) & 7); // High 3 bits
+  });
+
+  const size = Math.sqrt(icon.length * 2); // Size of the icon grid
+//   const scale = 10; // Scale factor to make the image 10 times bigger
+
+  for (let j = 0; j < size; j++) {
+    for (let i = 0; i < size; i++) {
+      if (imageData[j * size + i]) {
+        const index = 6 * (imageData[j * size + i] - 1);
+        if (flash){ctx.fillStyle = 'lightgray';}
+        else {ctx.fillStyle = '#' + palette.substring(index, index + 6);}
+        // Draw each pixel as a 10x10 block instead of 1x1
+        ctx.fillRect(x + i * scale, y + j * scale, scale, scale);
+      }
+    }
+  }
+};
 
 // Boss variables
 let bossActive = false;
 let boss = null;
 const enemyBullets = [];
-
-
 
 // Function to draw the player
 function drawPlayer() {
@@ -153,8 +209,12 @@ function drawPlayer() {
     } else {
         ctx.globalAlpha = 1; // Full opacity when not in godtime
     }
-    ctx.fillStyle = 'white';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    // ctx.fillStyle = 'white';
+    // ctx.fillRect(player.x, player.y, player.width, player.height);
+    if (frame % 60 < 30) {
+        drawIcon(ctx, icons[`player1`], player.x, player.y, player.width / 12, false);}
+    else {
+        drawIcon(ctx, icons[`player2`], player.x, player.y, player.width / 12, false);}
 
     if (player.isSlow) {
         ctx.fillStyle = 'red';
@@ -201,6 +261,14 @@ function drawScreen(textLines, bgColor = 'white', textColor = 'black') {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = textColor;
+    ctx.strokeStyle = '#000';  // Set the line color
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 3;  // Set the line thickness
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);  // Start at the top middle
+    ctx.lineTo(canvas.width / 2, canvas.height);  // Draw to the bottom middle
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
     
@@ -242,31 +310,31 @@ function startBossIntro() {
 
 function drawBossIntro() {
     if (currentLevel === 1) {
-        drawScreen([{ text: 'Hey!' }, { text: 'Bad Raining, Right?' }, { text: 'Oh! Clam Down!' }], 'black', 'white');
+        drawScreen([{ text: 'What’s wrong with this place?' }, { text: 'Something, lurking ahead.' }, { text: 'I must face what lies beneath.' }], 'black', 'white');
     } else if (currentLevel === 2) {
-        drawScreen([{ text: 'Where I Am?' }, { text: 'The Elevator?' }, { text: 'Who Are You?' }], 'black', 'white');
+        drawScreen([{ text: 'It doesn\'t just go up.' }, { text: 'A second demon.' }, { text: 'Waiting for me.' }], 'black', 'white');
     } else if (currentLevel === 3) {
-        drawScreen([{ text: 'Help!' }, { text: 'Take Me Out!' }, { text: 'Let Me Back Home!' }], 'black', 'white');
+        drawScreen([{ text: 'I can’t turn back now?' }, { text: 'Twisted!' }, { text: 'Number Demon!' }], 'black', 'white');
     } else if (currentLevel === 4) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Something unnatural' }, { text: 'More sinister.' }, { text: 'I falling into their trap?' }], 'black', 'white');
     } else if (currentLevel === 5) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Still same world?' }, { text:'Keep me from leaving?' }, { text: 'But the path darker.' }], 'black', 'white');
     } else if (currentLevel === 6) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'City!' }, { text: 'Crazy!' }, { text: 'I losing my own?' }], 'black', 'white');
     } else if (currentLevel === 7) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Every floor.' }, { text: 'Further from the truth.' }, { text: 'Just, going.' }], 'black', 'white');
     } else if (currentLevel === 8) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Train?' }, { text: 'Where they want?' }, { text: 'I\'m losing grip?' }], 'black', 'white');
     } else if (currentLevel === 9) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Can I still...' }, { text:'Trust.' }, { text: 'Myself?' }], 'black', 'white');
     } else if (currentLevel === 10) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'This is wrong...' }, { text: 'Toying with me.' }, { text: 'I was stopping them.' }], 'black', 'white');
     } else if (currentLevel === 11) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Darkness...' }, { text: 'Peace...' }, { text: 'How I got here?' }], 'black', 'white');
     } else if (currentLevel === 12) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Lift won’t stop.' }, { text: 'Broken, real...' }, { text: 'Into pieces.' }], 'black', 'white');
     } else if (currentLevel === 13) {
-        drawScreen([{ text: 'You come far!' }, { text: currentLevel + 'Level welcome.' }, { text: 'BUT NOT YOU!' }], 'black', 'white');
+        drawScreen([{ text: 'Final demon!' }, { text: 'What...' }, { text: 'A Beautiful world!' }], 'black', 'white');
     }                              
 }
 
@@ -279,18 +347,20 @@ function drawBoss() {
             if (bossHitTimer <= 0) {
                 bossHitFlash = false; // Stop flashing after some time
             }
-        } else {
-            ctx.fillStyle = 'black'; // Default boss color
         }
-
-        ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+        // ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+        if (frame % 60 < 30) {
+        drawIcon(ctx, icons[`boss${currentLevel}1`], boss.x, boss.y, boss.width / 12, bossHitFlash);}
+        else {
+        drawIcon(ctx, icons[`boss${currentLevel}2`], boss.x, boss.y, boss.width / 12, bossHitFlash);}
+    
         boss.x += boss.speed;
 
         if (boss.x <= 0 || boss.x + boss.width >= canvas.width) {
             boss.speed = -boss.speed;
         }
 
-        if (frame % 5 === 0) {
+        if (frame % 10 === 0) {
             shootBossBullets(boss);
         }
     }
@@ -336,9 +406,33 @@ function drawBossHealthBar() {
 let angleOffset = 0;
 // Function to shoot boss bullets
 function shootBossBullets(boss) {
-    
-    generateBulletsPattern(boss, 1, 16, butterflyCurvePattern, Math.PI / 90);
-    
+    if (currentLevel === 1) {
+        generateBulletsPattern(boss, 3, 1, focusedPattern, 0);
+    } else if (currentLevel === 2) {
+        generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 27);
+    } else if (currentLevel === 3) {
+        generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 180);
+    } else if (currentLevel === 4) {
+        generateBulletsPattern(boss, 8, 3, logarithmicSpiralPattern, Math.PI / 180);generateBulletsPattern(boss, 3, 8, decircularPattern, Math.PI / 180);
+    } else if (currentLevel === 5) {
+        generateBulletsPattern(boss, 2, 6, decircularPattern, Math.PI / 180); generateBulletsPattern(boss, 2, 6, circularPattern, Math.PI / 180);
+    } else if (currentLevel === 6) {
+        generateBulletsPattern(boss, 1, 12, butterflyCurvePattern, Math.PI / 90);
+    } else if (currentLevel === 7) {
+        generateBulletsPattern(boss, 3, 16, subwayPattern, Math.PI / 120);
+    } else if (currentLevel === 8) {
+        generateBulletsPattern(boss, 3, 16, trainPattern, 0);
+    } else if (currentLevel === 9) {
+        generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 27); generateBulletsPattern(boss, 1, 8, subwayPattern, Math.PI / 60);
+    } else if (currentLevel === 10) {
+        generateBulletsPattern(boss, 3, 16, spirographPattern, Math.PI / 120);
+    } else if (currentLevel === 11) {
+        generateBulletsPattern(boss, 3, 12, logarithmicSpiralPattern, Math.PI / 60);
+    } else if (currentLevel === 12) {
+        generateBulletsPattern(boss, 1, 16, trochoidFlowerPattern2, Math.PI / 72);
+    } else if (currentLevel === 13) {
+        generateBulletsPattern(boss, 1, 32, subwayPattern, Math.PI / 60);
+    }
 }
 
 function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction, anglechange) {
@@ -347,8 +441,8 @@ function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction,
         enemyBullets.push({
             x: boss.x + boss.width / 2,
             y: boss.y + boss.height / 2,
-            width: 5,
-            height: 5,
+            width: 15,
+            height: 15,
             dx: (dx + 0.01) * bulletSpeed,
             dy: (dy + 0.01) * bulletSpeed
         });
@@ -359,7 +453,7 @@ function generateBulletsPattern(boss, bulletSpeed, bulletCount, patternFunction,
 
 // Function to draw enemy bullets
 function drawEnemyBullets() {
-    if (currentLevel === 13) {
+    if (currentLevel === 13 || currentLevel === 6 || currentLevel === 10) {
         ctx.fillStyle = 'black';
     } else {ctx.fillStyle = 'yellow';}
     for (let index = enemyBullets.length - 1; index >= 0; index--) {
@@ -371,7 +465,6 @@ function drawEnemyBullets() {
 
         // Draw the bullet at the updated position
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        // ctx.fillText('1 3', bullet.x, bullet.y, bullet.width, bullet.height);
 
         // Remove bullets that go off screen
         if (
@@ -398,16 +491,6 @@ function circularPattern(i, bulletCount, boss, player) {
     //level 1 boss pattern, boss speed = 0, generateBulletsPattern(boss, 2, 8, circularPattern, Math.PI / 27);
 }
 
-function lissajousCurvePattern(i, bulletCount, boss, player) {
-    const a = 3; // Frequency along the x-axis
-    const b = 2; // Frequency along the y-axis
-    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
-    return {
-        dx: Math.sin(a * angle),
-        dy: Math.sin(b * angle)
-    };
-}
-
 function butterflyCurvePattern(i, bulletCount, boss, player) {
     boss.speed = 0;
     const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
@@ -415,20 +498,7 @@ function butterflyCurvePattern(i, bulletCount, boss, player) {
     return {
         dx: r * Math.cos(angle),
         dy: r * Math.sin(angle)
-    };
-}
-
-function hypotrochoidPattern(i, bulletCount, boss, player) {
-    const R = 6; // Radius of the larger circle
-    const r = 2; // Radius of the smaller circle
-    const d = 4; // Distance of the point from the smaller circle
-    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
-    const x = (R - r) * Math.cos(angle) + d * Math.cos(((R - r) / r) * angle);
-    const y = (R - r) * Math.sin(angle) - d * Math.sin(((R - r) / r) * angle);
-    return {
-        dx: x / R,
-        dy: y / R
-    };
+    };//level 6: generateBulletsPattern(boss, 1, 12, butterflyCurvePattern, Math.PI / 90);
 }
 
 function decircularPattern(i, bulletCount, boss, player) {
@@ -451,7 +521,6 @@ function subwayPattern(i, bulletCount, boss, player) {
 }
 
 function trochoidFlowerPattern(i, bulletCount, boss, player) {
-    // boss.speed = 0;
     const k = 4; // Controls the number of petals
     const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
     return {
@@ -461,7 +530,6 @@ function trochoidFlowerPattern(i, bulletCount, boss, player) {
 }//level 5 generateBulletsPattern(boss, 3, 8, trochoidFlowerPattern, Math.PI / 60); 
 
 function trochoidFlowerPattern2(i, bulletCount, boss, player) {
-    // boss.speed = 0;
     const k = 2; // Controls the number of petals
     const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
     return {
@@ -470,6 +538,49 @@ function trochoidFlowerPattern2(i, bulletCount, boss, player) {
     };
 }//level 12 generateBulletsPattern(boss, 1, 16, trochoidFlowerPattern2, Math.PI / 72);
 
+function logarithmicSpiralPattern(i, bulletCount, boss, player) {
+    boss.speed = 0;
+    const a = 0.1; // Controls the spiral’s tightness
+    const b = 0.2; // Controls the rate of expansion
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    const r = a * Math.exp(b); // Logarithmic spiral formula
+    const direction = Math.sin(frame / 100) >= 0 ? 1 : -1;
+    return {
+        dx: r * Math.cos(direction*angle),
+        dy: r * Math.sin(direction*angle)
+    };
+}//level 11:generateBulletsPattern(boss, 3, 12, logarithmicSpiralPattern, Math.PI / 60);
+
+function spirographPattern(i, bulletCount, boss, player) {
+    boss.speed = 0;
+    const R = 5; // Radius of the fixed circle
+    const r = 2; // Radius of the moving circle
+    const p = 1; // Distance of the point from the center of the moving circle
+    const angle = (Math.PI * 2 / bulletCount) * i + angleOffset;
+    const x = (R - r) * Math.cos(angle) + p * Math.cos(((R - r) / r) * angle);
+    const y = (R - r) * Math.sin(angle) - p * Math.sin(((R - r) / r) * angle);
+    return {
+        dx: x / R,
+        dy: y / R
+    };
+}//level 10: generateBulletsPattern(boss, 3, 16, spirographPattern, Math.PI / 120);
+
+function focusedPattern(i, bulletCount, boss, player) {
+    const dx = player.x - boss.x;
+    const dy = player.y - boss.y;
+    const magnitude = Math.sqrt(dx * dx + dy * dy);
+    return {
+        dx: (dx / magnitude),
+        dy: (dy / magnitude)
+    };
+}// combine generateBulletsPattern(boss, 3, 1, focusedPattern, 0);
+
+function trainPattern(i, bulletCount, boss, player) {
+    return {
+        dx: Math.sin(i / bulletCount * Math.PI * 2), // Creates a wave along the x-axis
+        dy: 1
+    };
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 function drawExplosions() {
@@ -510,6 +621,7 @@ function checkCollisions() {
                 bullet.y + bullet.height > boss.y
             ) {
                 boss.health--;
+                score += 1;
                 player.bullets.splice(bulletIndex, 1);
                 zzfx(...[,,129,.01,,.15,,,,,,,,5]);
                 
@@ -524,6 +636,10 @@ function checkCollisions() {
                     bossActive = false;
                     zzfx(...[,,172,.8,,.8,1,.76,7.7,3.73,-482,.08,.15,,.14]);
                     advanceLevel();
+                }
+                if (score % 130 === 0) {//every 130 score, player get 1 life
+                    player.lives += 1;
+                    zzfx(...[,,20,.04,,.6,,1.31,,,-990,.06,.17,,,.04,.07]);
                 }
             }
         }
@@ -548,7 +664,7 @@ function checkCollisions() {
 
             setTimeout(() => {
                 godtime = false;
-            }, 1000);
+            }, 3000);
             godtime = true;
         }
     });
@@ -557,6 +673,7 @@ function checkCollisions() {
 function updateHUD() {
     document.getElementById('lives').textContent = `Lives: ${player.lives}`;
     document.getElementById('level').textContent = `Level: ${currentLevel}`; // Update level display
+    document.getElementById('score').textContent = `Score: ${score}`; // Update score display
 }
 
 // Function to advance to the next level
@@ -567,12 +684,16 @@ function advanceLevel() {
         spawnBoss(currentLevel); // Spawn a new boss for the next level
     } else {
         gameState = 'gameOver';
+        initializeGame(); // Reset the game
         drawScreen([{ text: 'You Win!' }, { text: 'Thanks for Playing!' }, { text: 'Press Enter to Restart' }]);
     }
 }
 
 // Function to reset the game
 function resetGame() {
+    //clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    initializeGame();
     gameState = 'gameOver';  // Set game state to 'gameOver'
     // initializeGame();  // Reset game elements
     drawScreen([
@@ -585,6 +706,7 @@ function resetGame() {
 // Function to initialize the game
 function initializeGame(resetLevel = false) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.shadowBlur=0;
 
     // Reset player position and stats
     player.x = canvas.width / 2 - player.width / 2;
@@ -701,24 +823,22 @@ function animateBackground(t, level) {
         c.width|=0
         for(i=8;i--;)l(600,-2e3,i*404,h=1000);for(i=40;i--;)l(0,y=3**((t+i/3)%9%h),2e3,y) 
     } else if (level === 5) {
-        for(s=k=38;k--;s/=.97)for(i=50;i--;)for(j=28;j--;30-k<(i+t^j)**3%33&&x.fillRect(400+(j-14)*s,600+(i-22-t%1)*s,s,s))x.fillStyle=R(v=90-(k*2),v*Math.sin(t*.2),v*Math.cos(t*.01))
-    } else if (level === 6) {
-        x.shadowColor=`hsl(${t*400},99%,50%)`
-        x.shadowBlur=30
-        for(s=k=38;k--;s/=.97)for(i=50;i--;)for(j=28;j--;30-k<(i+t^j)**3%33&&x.fillRect(400+(j-14)*s,600+(i-22-t%1)*s,s,s))x.fillStyle=R(v=90-(k*2),v*Math.sin(t*.2),v*Math.cos(t*.01))
-    } else if (level === 7) {
+        for(s=k=46;k--;s/=.98)for(i=32;i--;)for(j=18;j--;32-k<(i+t^j)**3%40&&x.fillRect(600+(j-9)*s,400+(i-16-t%1)*s,s,s))x.fillStyle=R(v=k*9,v,v)
+        } else if (level === 6) {
+        // x.shadowColor=`hsl(${t*2},50%,50%)`
+        // x.shadowBlur=1
+        for(s=k=38;k--;s/=.97)for(i=23;i--;)for(j=14;j--;30-k<(i+t^j)**3%33&&x.fillRect(400+(j-14)*s,600+(i-22-t%1)*s,s,s))x.fillStyle=R(v=90-(k*2),v*Math.sin(t*.2),v*Math.cos(t*.01));
+        } else if (level === 7) {
         x.shadowBlur=0
         for(s=k=29;k--;s/=.81)for(j=25;i=--j>>2;e%5<i&&j-18&&x.fillRect(300+j%4*s-s/.4-k*9,400+i*s-4.8*s,s,s))e=j^k/8+t*6,x.fillStyle=R(v=e%7*k,v,v)
     } else if (level === 8) {
         for(s=i=w=c.width|=0;i--;s*=.98)j=i-t*30|0,x.fillRect(200-(j%9?j%2?-.5:.5:.6)*s+(w-i)*S(j/199),200+s,j%9?s/9+9:s*1.3,s/9+2)
     } else if (level === 9) {
-        x.shadowColor=`hsl(${t*400},99%,50%)`
-        x.shadowBlur=30
         c.width|=0;for(let i=0;i<14;i++){x.font='20px monospace';x.fillStyle=R(255*S(T(t)),0,0);x.fillText('13!',0,(i*99+t*333)%600);x.fillText('13!',320,(i*99+t*333)%600)}
     } else if (level === 10) {
         x.shadowColor=`hsl(${t*400},99%,50%)`
         x.shadowBlur=30
-        for(s=k=29;k--;s/=.81)for(j=25;i=--j>>2;e%5<i&&j-18&&x.fillRect(300+j%4*s-s/.4-k*9,400+i*s-4.8*s,s,s))e=j^k/8+t*6,x.fillStyle=R(v=e%7*k,v,v)
+        for(s=k=29;k--;s/=.81)for(j=25;i=--j>>2;e%5<i&&j-18&&x.fillRect(300+j%4*s-s/.4-k*9,400+i*s-4.8*s,s,s))e=j^k/8+t*6
     } else if (level === 11) {
         x.shadowBlur=0
         x.fillStyle = 'black';
@@ -736,15 +856,15 @@ function gameLoop() {
 
     now = Date.now();
     delta = now - then;
-    time = frame / 60;
+    time = frame / 30;
 
-    if (time * 60 | 0 == frame - 1) {
+    if (time * 30 | 0 == frame - 1) {
       time += 0.000001;
     }
 
     frame++;
 
-    if (delta > interval) {
+    // if (delta > interval) {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         animateBackground(time, currentLevel);
@@ -784,8 +904,8 @@ function gameLoop() {
             resetGame();
             // playing = false;
         }
-        then = now - (delta % interval);
-    }
+    //     then = now - (delta % interval);
+    // }
 
     if (gameState !== 'gameOver') {
         animationFrameId = requestAnimationFrame(gameLoop);
